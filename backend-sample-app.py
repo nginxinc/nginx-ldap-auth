@@ -59,7 +59,7 @@ class AppHandler(BaseHTTPRequestHandler):
         <tr>
           <td>Password: <input type="text" name="password"/></td>
         <tr>
-          <td><input type="submit"></td>
+          <td><input type="submit" value="Login"></td>
       </table>
         <input type="hidden" name="target" value="TARGET">
     </form>
