@@ -25,7 +25,7 @@ class AuthHTTPServer(ThreadingMixIn, HTTPServer):
 #class AuthHTTPServer(ForkingMixIn, HTTPServer):
 #    pass
 # -----------------------------------------------------------------------------
-# Requests are process with UNIX sockets
+# Requests are processed with UNIX sockets
 #import threading
 #from SocketServer import ThreadingUnixStreamServer
 #class AuthHTTPServer(ThreadingUnixStreamServer, HTTPServer):
