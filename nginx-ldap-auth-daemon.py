@@ -6,23 +6,24 @@ import sys, os, signal, base64, ldap, Cookie
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 Listen = ('localhost', 8888)
-#Listen = "/tmp/auth.sock"    # uncomment unix sockets section below to use
+#Listen = "/tmp/auth.sock"    # Also uncomment lines in 'Requests are
+                              # processed with UNIX sockets' section below
 
 # -----------------------------------------------------------------------------
 # Different request processing models: select one
 # -----------------------------------------------------------------------------
-# requests are processed in separate thread
+# Requests are processed in separate thread
 import threading
 from SocketServer import ThreadingMixIn
 class AuthHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 # -----------------------------------------------------------------------------
-# requests are processed in separate process
+# Requests are processed in separate process
 #from SocketServer import ForkingMixIn
 #class AuthHTTPServer(ForkingMixIn, HTTPServer):
 #    pass
 # -----------------------------------------------------------------------------
-# unix sockets
+# Requests are process with UNIX sockets
 #import threading
 #from SocketServer import ThreadingUnixStreamServer
 #class AuthHTTPServer(ThreadingUnixStreamServer, HTTPServer):
@@ -31,8 +32,8 @@ class AuthHTTPServer(ThreadingMixIn, HTTPServer):
 
 class AuthHandler(BaseHTTPRequestHandler):
 
-    # returns True if request processed and response sent, otherwise False
-    # sets ctx['user'] and ctx['pass'] for authentication
+    # Return True if request is processed and response sent, otherwise False
+    # Set ctx['user'] and ctx['pass'] for authentication
     def do_GET(self):
 
         ctx = self.ctx
@@ -41,19 +42,19 @@ class AuthHandler(BaseHTTPRequestHandler):
         for k, v in self.get_params().items():
             ctx[k] = self.headers.get(v[0], v[1])
             if ctx[k] == None:
-                self.auth_failed(ctx, 'required "%s" header is not passed' % k)
+                self.auth_failed(ctx, 'required "%s" header was not passed' % k)
                 return True
 
-        ctx['action'] = 'performing authoriazation'
+        ctx['action'] = 'performing authorization'
         auth_header = self.headers.get('Authorization')
         auth_cookie = self.get_cookie(ctx['cookiename'])
 
         if auth_cookie != None and auth_cookie != '':
             auth_header = "Basic " + auth_cookie
-            self.log_message("using login/password from cookie %s" %
+            self.log_message("using username/password from cookie %s" %
                              ctx['cookiename'])
         else:
-            self.log_message("using login/password from authorization header")
+            self.log_message("using username/password from authorization header")
 
         if auth_header is None or not auth_header.lower().startswith('basic '):
 
@@ -77,7 +78,7 @@ class AuthHandler(BaseHTTPRequestHandler):
         ctx['user'] = user
         ctx['pass'] = passwd
 
-        # continue request processing
+        # Continue request processing
         return False
 
     def get_cookie(self, name):
@@ -92,7 +93,7 @@ class AuthHandler(BaseHTTPRequestHandler):
             return None
 
 
-    # Logs the error and completes the request with apropriate status
+    # Log the error and complete the request with appropriate status
     def auth_failed(self, ctx, errmsg = None):
 
         msg = 'Error while ' + ctx['action']
@@ -130,7 +131,7 @@ class AuthHandler(BaseHTTPRequestHandler):
         self.log_message(format, *args)
 
 
-# verifies user/password against LDAP server
+# Verify username/password against LDAP server
 class LDAPAuthHandler(AuthHandler):
 
     # Parameters to put into self.ctx from the HTTP header of auth request
@@ -198,7 +199,7 @@ class LDAPAuthHandler(AuthHandler):
 
             self.log_message('Auth OK for user "%s"' % (ctx['user']))
 
-            # successfully authenticated
+            # Successfully authenticated user
             self.send_response(200)
             self.end_headers()
 
