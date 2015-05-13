@@ -2,6 +2,8 @@
 ''''which python2 >/dev/null && exec python2 "$0" "$@" # '''
 ''''which python  >/dev/null && exec python  "$0" "$@" # '''
 
+# Copyright (C) 2014-2015 Nginx, Inc.
+
 # Example of an application working on port 9000
 # To interact with nginx-ldap-auth-daemon this application
 # 1) accepts GET  requests on /login and responds with a login form
