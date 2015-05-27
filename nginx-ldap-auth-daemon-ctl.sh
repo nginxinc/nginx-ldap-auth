@@ -1,7 +1,7 @@
 #!/bin/sh
 
-CMD=./nginx-ldap-auth-daemon.py
-PIDFILE=./nginx-ldap-auth-daemon.pid
+CMD=`pwd`/nginx-ldap-auth-daemon.py
+PIDFILE=`pwd`/nginx-ldap-auth-daemon.pid
 
 case $1 in
     "start")
