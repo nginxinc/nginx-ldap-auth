@@ -141,11 +141,9 @@ To modify the ldap-auth daemon to communicate with a different (non-LDAP) type o
 
 The auth daemon was tested against default configurations of the following LDAP servers:
 
-<ul>
-<li> [OpenLDAP](http://www.openldap.org/)</li>
+<li>[OpenLDAP](http://www.openldap.org/)</li>
 <li> Microsoft Windows Server Active Directory 2003</li>
 <li> Microsoft Windows Server Active Directory 2012</li>
-</ul>
 
 ## Limitations
 
