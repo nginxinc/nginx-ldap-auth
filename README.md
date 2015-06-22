@@ -12,7 +12,7 @@ The ldap-auth daemon, which mediates between NGINX Plus and the LDAP server, is 
 
 ![NGINX LDAP Architecture](http://nginx.wpengine.com/wp-content/uploads/2015/06/components-e1434577427617.jpg)
 
-For a step-by-step description of the authentication process in the reference implementation, see [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users#ldap-auth-flow). 
+For a step-by-step description of the authentication process in the reference implementation, see [How Authentication Works in the Reference Implementation](https://nginx.com/blog/nginx-plus-authenticate-users#ldap-auth-flow) in [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users). 
 
 ## Installation and Configuration
 
@@ -142,7 +142,7 @@ To modify the ldap-auth daemon to communicate with a different (non-LDAP) type o
 The auth daemon was tested against default configurations of the following LDAP servers:
 
 <ul>
-<li>[OpenLDAP](http://www.openldap.org/)</li>
+<li> [OpenLDAP](http://www.openldap.org/)</li>
 <li> Microsoft Windows Server Active Directory 2003</li>
 <li> Microsoft Windows Server Active Directory 2012</li>
 </ul>
