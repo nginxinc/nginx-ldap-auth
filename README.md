@@ -59,7 +59,7 @@ To install and configure the reference implementation, perform the following ste
 
 Modify the **nginx-ldap-auth.conf** file, by changing values as appropriate for your deployment for the terms shown in bold font in the following configuration. 
 
-For detailed instructions, see [Configuring the Reference Implementation](https://nginx.com/blog/nginx-plus-authenticate-users#configure) in the [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users) blog post. The **nginx-ldap-auth.conf** file includes detailed instructions (in comments not shown here) for setting the `proxy-set-header` directives; for information about other directives, see the [NGINX reference documentation](http://nginx.org/en/docs/).
+For detailed instructions, see [Configuring the Reference Implementation](https://nginx.com/blog/nginx-plus-authenticate-users#ldap-auth-configure) in the [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users) blog post. The **nginx-ldap-auth.conf** file includes detailed instructions (in comments not shown here) for setting the `proxy-set-header` directives; for information about other directives, see the [NGINX reference documentation](http://nginx.org/en/docs/).
 
 <pre>http {
   ...
