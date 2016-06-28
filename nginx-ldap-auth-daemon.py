@@ -144,7 +144,7 @@ class LDAPAuthHandler(AuthHandler):
              'url': ('X-Ldap-URL', None),
              'basedn': ('X-Ldap-BaseDN', None),
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
-             'binddn': ('X-Ldap-BindDN', 'cn=anonymous'),
+             'binddn': ('X-Ldap-BindDN', ''),
              'bindpasswd': ('X-Ldap-BindPass', ''),
              'cookiename': ('X-CookieName', '')
         }
