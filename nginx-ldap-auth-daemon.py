@@ -144,7 +144,7 @@ class LDAPAuthHandler(AuthHandler):
              'url': ('X-Ldap-URL', None),
              'basedn': ('X-Ldap-BaseDN', None),
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
-             'binddn': ('X-Ldap-BindDN', 'cn=anonymous'),
+             'binddn': ('X-Ldap-BindDN', ''),
              'bindpasswd': ('X-Ldap-BindPass', ''),
              'cookiename': ('X-CookieName', '')
         }
@@ -176,10 +176,7 @@ class LDAPAuthHandler(AuthHandler):
             # ldap_obj.set_option(ldap.OPT_REFERRALS, 0)
 
             ctx['action'] = 'binding as search user'
-            if ctx['binddn'] == 'cn=anonymous':
-                ldap_obj.simple_bind_s()
-            else:
-                ldap_obj.bind_s(ctx['binddn'], ctx['bindpasswd'], ldap.AUTH_SIMPLE)
+            ldap_obj.bind_s(ctx['binddn'], ctx['bindpasswd'], ldap.AUTH_SIMPLE)
 
             ctx['action'] = 'preparing search filter'
             searchfilter = ctx['template'] % { 'username': ctx['user'] }
