@@ -53,6 +53,20 @@ To install and configure the reference implementation, perform the following ste
 1. To test the reference implementation, use a web browser to access **http://*nginx-server-address*:8081**. Verify that the browser presents a login form. After you fill out the form and submit it, verify that the server returns the expected response to valid credentials. The sample back-end daemon returns this:
 <pre>Hello, world! Requested URL: <em>URL</em></pre>
 
+<a name="docker">
+### Run as Docker container
+
+Another option to run authentication daemon is [Docker](https://www.docker.com/what-docker)
+
+1. [Install and run Docker daemon](https://docs.docker.com/engine/getstarted/)
+
+2. Run following commands to start the ldap-auth daemon in Docker container
+<pre># <strong>docker build -t nginx-ldap-auth .</strong>
+# <strong>docker run --name=nginx-ldap-auth --restart=always -d -p 8888:8888 nginx-ldap-auth</strong></pre>
+
+3. Modify the NGINX Plus configuration file as described in [Required Modifications to the NGINX Plus Configuration File](#required-mods) below.
+</a>
+
 <a name="required-mods">
 ### Required Modifications to the NGINX Plus Configuration File
 </a>
