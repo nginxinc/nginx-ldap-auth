@@ -135,7 +135,7 @@ If you want to change the realm name from the default value (**Restricted**), un
 
 <pre>proxy_set_header X-Ldap-Realm "<strong>Restricted</strong>";</pre>
 
-If you want to auth user and group - use these `binddn` and `grptemplate` parameters that the ldap-auth daemon passes to the OpenLDAP server by default, uncomment the following directive as shown, and change the value:
+If you want to auth user and group - use these `groupdn` and `grptemplate` parameters that the ldap-auth daemon passes to the OpenLDAP server by default, uncomment the following directive as shown, and change the value:
 
 <pre>
 proxy_set_header X-Ldap-GroupDN "<strong>cn=mygroupname,ou=group,dc=test,dc=com</strong>";
