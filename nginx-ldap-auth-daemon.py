@@ -114,7 +114,9 @@ class AuthHandler(BaseHTTPRequestHandler):
             msg += ', login="%s"' % ctx['user']
 
         self.log_error(msg)
-        self.send_response(403)
+        self.send_response(401)
+        self.send_header('WWW-Authenticate', 'Basic realm=' + ctx['realm'])
+        self.send_header('Cache-Control', 'no-cache')
         self.end_headers()
 
     def get_params(self):
