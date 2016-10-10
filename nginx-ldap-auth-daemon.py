@@ -71,7 +71,7 @@ class AuthHandler(BaseHTTPRequestHandler):
 
         try:
             auth_decoded = base64.b64decode(auth_header[6:])
-            user, passwd = auth_decoded.split(':', 2)
+            user, passwd = auth_decoded.split(':', 1)
 
         except:
             self.auth_failed(ctx)
@@ -131,7 +131,7 @@ class AuthHandler(BaseHTTPRequestHandler):
         if not hasattr(self, 'ctx'):
             user = '-'
         else:
-            user = ctx['user']
+            user = self.ctx['user']
 
         sys.stdout.write("%s - %s [%s] %s\n" % (addr, user,
                          self.log_date_time_string(), format % args))
