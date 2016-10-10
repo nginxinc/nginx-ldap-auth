@@ -12,11 +12,11 @@ The ldap-auth daemon, which mediates between NGINX Plus and the LDAP server, is 
 
 ![NGINX LDAP Architecture](http://nginx.wpengine.com/wp-content/uploads/2015/06/components-e1434577427617.jpg)
 
-For a step-by-step description of the authentication process in the reference implementation, see [How Authentication Works in the Reference Implementation](https://nginx.com/blog/nginx-plus-authenticate-users#ldap-auth-flow) in [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users). 
+For a step-by-step description of the authentication process in the reference implementation, see [How Authentication Works in the Reference Implementation](https://nginx.com/blog/nginx-plus-authenticate-users#ldap-auth-flow) in [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users).
 
 ## Installation and Configuration
 
-The NGINX Plus configuration file that is provided with the reference implementation configures all components other than the LDAP server (that is, NGINX Plus, the client, the ldap-auth daemon, and the back-end daemon) to run on the same host, which is adequate for testing purposes. The LDAP server can also run on that host during testing. 
+The NGINX Plus configuration file that is provided with the reference implementation configures all components other than the LDAP server (that is, NGINX Plus, the client, the ldap-auth daemon, and the back-end daemon) to run on the same host, which is adequate for testing purposes. The LDAP server can also run on that host during testing.
 
 In an actual deployment, the back-end application and authentication server typically each run on a separate host, with NGINX Plus on a third host. The ldap-auth daemon does not consume many resources in most situations, so it can run on the NGINX Plus host or another host of your choice.
 
@@ -26,16 +26,16 @@ To install and configure the reference implementation, perform the following ste
 
 1. If NGINX Plus is not already running, install it according to the [instructions for your operating system](https://cs.nginx.com/repo_setup).
 
-1. If an LDAP authentication server is not already running, install and configure one. By default the ldap-auth daemon communicates with OpenLDAP, but can be configured to work with Active Directory. 
+1. If an LDAP authentication server is not already running, install and configure one. By default the ldap-auth daemon communicates with OpenLDAP, but can be configured to work with Active Directory.
 
     If you are using the LDAP server only to test the reference implementation, you can use the [OpenLDAP server Docker image](https://github.com/osixia/docker-openldap) that is available on GitHub, or you can set up a server in a virtual environment using instructions such as [How To Install and Configure a Basic LDAP Server on an Ubuntu 12.04 VPS](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-a-basic-ldap-server-on-an-ubuntu-12-04-vps).
 
-1. On the host where the ldap-auth daemon is to run, install the following additional software. We recommend using the versions that are distributed with the operating system, instead of downloading the software from an open source repository. 
+1. On the host where the ldap-auth daemon is to run, install the following additional software. We recommend using the versions that are distributed with the operating system, instead of downloading the software from an open source repository.
 
-    - Python version 2. Version 3 is not supported. 
+    - Python version 2. Version 3 is not supported.
     - The Python LDAP module, **python-ldap** (created by the [python-ldap.org](http://www.python-ldap.org) open source project).
 
-1. Copy the following files from your repository clone to the indicated hosts: 
+1. Copy the following files from your repository clone to the indicated hosts:
     - **nginx-ldap-auth.conf** – NGINX Plus configuration file, which contains the minimal set of directives for testing the reference implementation. Install on the NGINX Plus host (in the **/etc/nginx/conf.d** directory if using the conventional configuration scheme). To avoid configuration conflicts, remember to move or rename any default configuration files installed with NGINX Plus.
     - **nginx-ldap-auth-daemon.py** – Python code for the ldap-auth daemon. Install on the host of your choice.
     - **nginx-ldap-auth-daemon-ctl.sh** – Sample shell script for starting and stopping the daemon. Install on the same host as the ldap-auth daemon.
@@ -57,7 +57,7 @@ To install and configure the reference implementation, perform the following ste
 ### Required Modifications to the NGINX Plus Configuration File
 </a>
 
-Modify the **nginx-ldap-auth.conf** file, by changing values as appropriate for your deployment for the terms shown in bold font in the following configuration. 
+Modify the **nginx-ldap-auth.conf** file, by changing values as appropriate for your deployment for the terms shown in bold font in the following configuration.
 
 For detailed instructions, see [Configuring the Reference Implementation](https://nginx.com/blog/nginx-plus-authenticate-users#ldap-auth-configure) in the [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users) blog post. The **nginx-ldap-auth.conf** file includes detailed instructions (in comments not shown here) for setting the `proxy-set-header` directives; for information about other directives, see the [NGINX reference documentation](http://nginx.org/en/docs/).
 
@@ -75,7 +75,7 @@ For detailed instructions, see [Configuring the Reference Implementation](https:
       location = /auth-proxy {
          proxy_pass http://<strong>127.0.0.1</strong>:8888;
          proxy_cache <strong>auth_cache</strong>; # Must match the name in the proxy_cache_path directive above
-         proxy_cache_valid 200 403 <strong>10m</strong>;
+         proxy_cache_valid 200 <strong>10m</strong>;
 
          # URL and port for connecting to the LDAP server
          proxy_set_header X-Ldap-URL "<strong>ldaps</strong>://<strong>example.com</strong>:<strong>636</strong>";
@@ -118,7 +118,7 @@ The **nginx-ldap-auth.conf** file enables caching of both data and credentials. 
       <strong>#</strong>proxy_cache auth_cache;
       # note that cookie is added to cache key
       <strong>#</strong>proxy_cache_key "$http_authorization$cookie_nginxauth";
-      <strong>#</strong>proxy_cache_valid 200 403 10m;
+      <strong>#</strong>proxy_cache_valid 200 10m;
      }
    }
 }</pre>
