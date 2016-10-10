@@ -128,7 +128,12 @@ class AuthHandler(BaseHTTPRequestHandler):
         else:
             addr = "-"
 
-        sys.stdout.write("%s - %s [%s] %s\n" % (addr, self.ctx['user'],
+        if not hasattr(self, 'ctx'):
+            user = '-'
+        else:
+            user = ctx['user']
+
+        sys.stdout.write("%s - %s [%s] %s\n" % (addr, user,
                          self.log_date_time_string(), format % args))
 
     def log_error(self, format, *args):
