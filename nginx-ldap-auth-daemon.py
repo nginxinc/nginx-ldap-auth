@@ -4,10 +4,10 @@
 
 # Copyright (C) 2014-2015 Nginx, Inc.
 
-import sys, os, signal, base64, ldap, Cookie
+import sys, os, signal, base64, ldap, Cookie, argparse
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
-Listen = ('localhost', 8888)
+#Listen = ('localhost', 8888)
 #Listen = "/tmp/auth.sock"    # Also uncomment lines in 'Requests are
                               # processed with UNIX sockets' section below
 
@@ -142,10 +142,8 @@ class AuthHandler(BaseHTTPRequestHandler):
 
 # Verify username/password against LDAP server
 class LDAPAuthHandler(AuthHandler):
-
     # Parameters to put into self.ctx from the HTTP header of auth request
-    def get_params(self):
-        return {
+    params =  {
              # parameter      header         default
              'realm': ('X-Ldap-Realm', 'Restricted'),
              'url': ('X-Ldap-URL', None),
@@ -155,6 +153,13 @@ class LDAPAuthHandler(AuthHandler):
              'bindpasswd': ('X-Ldap-BindPass', ''),
              'cookiename': ('X-CookieName', '')
         }
+
+    @classmethod
+    def set_params(cls, params):
+        cls.params = params
+
+    def get_params(self):
+        return self.params
 
     # GET handler for the authentication request
     def do_GET(self):
@@ -228,6 +233,48 @@ def exit_handler(signal, frame):
     sys.exit(0)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description="""Simple Nginx LDAP authentication helper.""")
+    # Group for listen options:
+    group = parser.add_argument_group("Listen options")
+    group.add_argument('--host',  metavar="hostname", 
+        default="localhost", help="host to bind (Default: localhost)")
+    group.add_argument('-p', '--port', metavar="port", type=int, 
+        default=8888, help="port to bind (Default: 8888)")
+    # ldap options:
+    group = parser.add_argument_group(title="LDAP options")
+    group.add_argument('-u', '--url', metavar="URL",
+        default="ldap://localhost:389", 
+        help=("LDAP URI to query (Default: ldapi://localhost:389)"))
+    group.add_argument('-b', metavar="baseDn", dest="basedn", default='',
+        help="LDAP base dn (Default: unset)")
+    group.add_argument('-D', metavar="bindDn", dest="binddn", default='',
+        help="LDAP bind DN (Default: anonymous)")
+    group.add_argument('-w', metavar="passwd", dest="bindpw", default='',
+        help="LDAP password for the bind DN (Default: unset)")
+    group.add_argument('-f', '--filter', metavar='filter', 
+        default='(cn=%(username)s)', 
+        help="LDAP filter (Default: cn=%%(username)s)")
+    # http options:
+    group = parser.add_argument_group(title="HTTP options")
+    group.add_argument('-R', '--realm', metavar='"Restricted Area"', 
+        default="Resticted", help='HTTP auth realm (Default: "Restricted")')
+    group.add_argument('-c', '--cookie', metavar="cookiename", 
+        default="", help="HTTP cookie name to set in (Default: unset)")
+
+    args = parser.parse_args()
+    global Listen 
+    Listen = (args.host, args.port)
+    auth_params = {
+             'realm': ('X-Ldap-Realm', args.realm),
+             'url': ('X-Ldap-URL', args.url),
+             'basedn': ('X-Ldap-BaseDN', args.basedn),
+             'template': ('X-Ldap-Template', args.filter),
+             'binddn': ('X-Ldap-BindDN', args.binddn),
+             'bindpasswd': ('X-Ldap-BindPass', args.bindpw),
+             'cookiename': ('X-CookieName', args.cookie)
+    }
+    LDAPAuthHandler.set_params(auth_params)
     server = AuthHTTPServer(Listen, LDAPAuthHandler)
     signal.signal(signal.SIGINT, exit_handler)
     server.serve_forever()
