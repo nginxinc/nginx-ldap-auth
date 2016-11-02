@@ -254,7 +254,7 @@ if __name__ == '__main__':
     group = parser.add_argument_group(title="LDAP options")
     group.add_argument('-u', '--url', metavar="URL",
         default="ldap://localhost:389", 
-        help=("LDAP URI to query (Default: ldapi://localhost:389)"))
+        help=("LDAP URI to query (Default: ldap://localhost:389)"))
     group.add_argument('-b', metavar="baseDn", dest="basedn", default='',
         help="LDAP base dn (Default: unset)")
     group.add_argument('-D', metavar="bindDn", dest="binddn", default='',

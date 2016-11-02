@@ -1,0 +1,5 @@
+nginx-ldap-auth (0.0.3-1) UNRELEASED; urgency=low
+
+  * Initial release
+
+ -- Ippolitov Igor <iippolitov@nginx.com>  Wed, 02 Nov 2016 14:32:15 +0300

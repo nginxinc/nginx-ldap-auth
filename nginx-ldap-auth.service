@@ -4,11 +4,11 @@ After=network.target network-online.target
 
 [Service]
 Type=simple
-User=nobody
-Group=nobody
+User=nginx-ldap-auth
+Group=nginx-ldap-auth
 WorkingDirectory=/var/run
-PIDFile=/run/nginx-ldap-auth/nginx-ldap-auth.pid
-ExecStart=/usr/bin/nginx-ldap-auth-daemon
+EnvFile=/etc/default/nginx-ldap-auth
+ExecStart=/usr/bin/nginx-ldap-auth-daemon $URL $BASE $BIND_DN $BIND_PASS $COOKIE $FILTER $REALM
 KillMode=process
 KillSignal=SIGINT
 Restart=on-failure
