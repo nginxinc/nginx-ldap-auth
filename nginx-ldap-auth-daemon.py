@@ -180,6 +180,15 @@ class LDAPAuthHandler(AuthHandler):
             return
 
         try:
+            # check that uri and baseDn are set
+            # either from cli or a request
+            if not ctx['url']: 
+                self.log_message('LDAP URL is not set!')
+                return
+            if not ctx['basedn']:
+                self.log_message('LDAP baseDN is not set!')
+                return 
+
             ctx['action'] = 'initializing LDAP connection'
             ldap_obj = ldap.initialize(ctx['url']);
 
