@@ -61,7 +61,7 @@ class AuthHandler(BaseHTTPRequestHandler):
         if auth_header is None or not auth_header.lower().startswith('basic '):
 
             self.send_response(401)
-            self.send_header('WWW-Authenticate', 'Basic realm=' + ctx['realm'])
+            self.send_header('WWW-Authenticate', 'Basic realm="' + ctx['realm'] + '"')
             self.send_header('Cache-Control', 'no-cache')
             self.end_headers()
 
@@ -115,7 +115,7 @@ class AuthHandler(BaseHTTPRequestHandler):
 
         self.log_error(msg)
         self.send_response(401)
-        self.send_header('WWW-Authenticate', 'Basic realm=' + ctx['realm'])
+        self.send_header('WWW-Authenticate', 'Basic realm="' + ctx['realm'] + '"')
         self.send_header('Cache-Control', 'no-cache')
         self.end_headers()
 
