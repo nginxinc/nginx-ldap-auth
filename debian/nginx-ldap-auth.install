@@ -1,0 +1,3 @@
+#!/usr/bin/dh-exec
+nginx-ldap-auth-daemon.py => usr/bin/nginx-ldap-auth-daemon
+nginx-ldap-auth.default => etc/default/nginx-ldap-auth

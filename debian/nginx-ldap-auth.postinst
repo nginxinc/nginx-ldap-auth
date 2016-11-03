@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+getent group nginx-ldap-auth > /dev/null || groupadd -r nginx-ldap-auth
+getent passwd nginx-ldap-auth > /dev/null || \
+    useradd -r -d /var/run -g nginx-ldap-auth \
+    -s /sbin/nologin -c "Nginx auth helper" nginx-ldap-auth
+
+install -d -m755 -o nginx-ldap-auth -g nginx-ldap-auth /var/log/nginx-ldap-auth
+
+#DEBHELPER#

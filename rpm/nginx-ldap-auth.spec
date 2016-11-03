@@ -11,6 +11,7 @@ Source0:	nginx-ldap-auth-release-%{version}.tar.gz
 BuildRequires:	systemd
 Requires:	systemd
 Requires:	python-ldap
+Requires:	python-argparse
 
 %description
 Reference implementation of method for authenticating users on behalf of
@@ -20,17 +21,26 @@ servers proxied by NGINX or NGINX Plus.
 %setup -q
 
 %install
+ls
 mkdir -p %buildroot%_bindir
 install -m755 nginx-ldap-auth-daemon.py %buildroot%_bindir/nginx-ldap-auth-daemon
 mkdir -p %buildroot%_unitdir
-install -m644 nginx-ldap-auth.service %buildroot%_unitdir/
+install -m644 %name.service %buildroot%_unitdir/
+install -d -m755 %buildroot/etc/default
+install -m644 %name.default %buildroot/etc/default/%name
 
 %files
 %doc README.md nginx-ldap-auth.conf backend-sample-app.py LICENSE
+/etc/default/%name
 %_bindir/nginx-ldap-auth-daemon
-%_unitdir/nginx-ldap-auth.service
+%_unitdir/%name.service
+
 
 %post
+getent group nginx-ldap-auth > /dev/null || groupadd -r nginx-ldap-auth
+getent passwd nginx-ldap-auth > /dev/null || \
+    useradd -r -d /var/lib/nginx -g nginx-ldap-auth \
+    -s /sbin/nologin -c "Nginx auth helper" nginx-ldap-auth
 /usr/bin/systemctl preset nginx-ldap-auth.service
 
 %preun
