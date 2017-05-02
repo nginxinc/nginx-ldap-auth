@@ -12,6 +12,7 @@ BuildRequires:	systemd
 Requires:	systemd
 Requires:	python-ldap
 Requires:	python-argparse
+Requires:	logrotate
 
 %description
 Reference implementation of method for authenticating users on behalf of
@@ -28,10 +29,12 @@ mkdir -p %buildroot%_unitdir
 install -m644 %name.service %buildroot%_unitdir/
 install -d -m755 %buildroot/etc/default
 install -m644 %name.default %buildroot/etc/default/%name
+install -m644 %name.logrotate %buildroot%_sysconfdir/logrotate.d/%name
 
 %files
 %doc README.md nginx-ldap-auth.conf backend-sample-app.py LICENSE
 /etc/default/%name
+%_sysconfdir/logrotate.d/%name
 %_bindir/nginx-ldap-auth-daemon
 %_unitdir/%name.service
 
