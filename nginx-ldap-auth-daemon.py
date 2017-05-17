@@ -3,6 +3,7 @@
 ''''which python  >/dev/null && exec python  -u "$0" "$@" &>>$LOG # '''
 
 # Copyright (C) 2014-2015 Nginx, Inc.
+# Add LDAP Group check support by Evgeny Kulev evgeny@kulev.ru 2016.
 
 import sys, os, signal, base64, ldap, Cookie, argparse
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -147,7 +148,9 @@ class LDAPAuthHandler(AuthHandler):
              # parameter      header         default
              'realm': ('X-Ldap-Realm', 'Restricted'),
              'url': ('X-Ldap-URL', None),
+             'groupdn': ('X-Ldap-GroupDN', None),
              'basedn': ('X-Ldap-BaseDN', None),
+             'grptemplate': ('X-Ldap-GrpTemplate', '(memberUid=%(username)s)'),
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
              'binddn': ('X-Ldap-BindDN', ''),
              'bindpasswd': ('X-Ldap-BindPass', ''),
@@ -198,6 +201,25 @@ class LDAPAuthHandler(AuthHandler):
 
             ctx['action'] = 'binding as search user'
             ldap_obj.bind_s(ctx['binddn'], ctx['bindpasswd'], ldap.AUTH_SIMPLE)
+
+            if ctx['groupdn']:
+                ctx['action'] = 'preparing group search filter'
+                grpsearchfilter = ctx['grptemplate'] % { 'username': ctx['user'] }
+
+                self.log_message(('searching on server "%s" with group dn ' + \
+                              '"%s" with filter "%s"') %
+                              (ctx['url'], ctx['groupdn'], grpsearchfilter))
+
+                ctx['action'] = 'running group search query'
+                grpresults = ldap_obj.search_s(ctx['groupdn'], ldap.SCOPE_SUBTREE,
+                                          grpsearchfilter, ['objectclass'], 1)
+
+                ctx['action'] = 'verifying search query grpresults'
+                if len(grpresults) < 1:
+                    self.auth_failed(ctx, 'no permission to user found in group')
+                    return
+                else:
+                    self.log_message('Group OK for user "%s"' % (ctx['user']))
 
             ctx['action'] = 'preparing search filter'
             searchfilter = ctx['template'] % { 'username': ctx['user'] }

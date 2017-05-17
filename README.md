@@ -119,7 +119,7 @@ The **nginx-ldap-auth.conf** file enables caching of both data and credentials. 
 
 <pre>http {
   ...
-  <strong>#</strong>proxy_cache_path cache/ keys_zone=auth_cache:10m;
+  <strong>#</strong>proxy_cache_path cache/ levels=1:2 keys_zone=auth_cache:10m;
   ...
   server {
     ...
@@ -137,10 +137,19 @@ The **nginx-ldap-auth.conf** file enables caching of both data and credentials. 
 If you want to change the value for the `template` parameter that the ldap-auth daemon passes to the OpenLDAP server by default, uncomment the following directive as shown, and change the value:
 
 <pre>proxy_set_header X-Ldap-Template "<strong>(cn=%(username)s)</strong>";</pre>
+OR
+<pre>proxy_set_header X-Ldap-Template "<strong>(&(objectClass=posixAccount)(uid=%(username)s))</strong>";</pre>
 
 If you want to change the realm name from the default value (**Restricted**), uncomment and change the following directive:
 
 <pre>proxy_set_header X-Ldap-Realm "<strong>Restricted</strong>";</pre>
+
+If you want to auth user and group - use these `groupdn` and `grptemplate` parameters that the ldap-auth daemon passes to the OpenLDAP server by default, uncomment the following directive as shown, and change the value:
+
+<pre>
+proxy_set_header X-Ldap-GroupDN "<strong>cn=mygroupname,ou=group,dc=test,dc=com</strong>";
+proxy_set_header X-Ldap-GrpTemplate "<strong>(memberUid=%(username)s)</strong>";</pre>
+
 
 ### Authentication Server
 
