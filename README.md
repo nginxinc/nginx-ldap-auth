@@ -10,7 +10,7 @@ The ngx-ldap-auth software is a reference implementation of a method for authent
 
 The ldap-auth daemon, which mediates between NGINX Plus and the LDAP server, is intended to serve as a model for "connector" daemons written in other languages, for different authentication systems, or both. [NGINX, Inc. Professional Services](http://nginx.com/services/) is available to assist with such adaptations.
 
-![NGINX LDAP Architecture](http://nginx.wpengine.com/wp-content/uploads/2015/06/components-e1434577427617.jpg)
+![NGINX LDAP Architecture](https://cdn-1.wp.nginx.com/wp-content/uploads/2016/02/ldap-auth-components.jpg)
 
 For a step-by-step description of the authentication process in the reference implementation, see [How Authentication Works in the Reference Implementation](https://nginx.com/blog/nginx-plus-authenticate-users#ldap-auth-flow) in [NGINX Plus and NGINX Can Authenticate Application Users](https://nginx.com/blog/nginx-plus-authenticate-users).
 
