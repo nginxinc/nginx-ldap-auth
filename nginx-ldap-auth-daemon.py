@@ -239,6 +239,7 @@ def exit_handler(signal, frame):
             ex, value, trace = sys.exc_info()
             sys.stderr.write('Failed to remove socket "%s": %s\n' %
                              (Listen, str(value)))
+            sys.stderr.flush()
     sys.exit(0)
 
 if __name__ == '__main__':
@@ -286,4 +287,8 @@ if __name__ == '__main__':
     LDAPAuthHandler.set_params(auth_params)
     server = AuthHTTPServer(Listen, LDAPAuthHandler)
     signal.signal(signal.SIGINT, exit_handler)
+    signal.signal(signal.SIGTERM, exit_handler)
+
+    sys.stdout.write("Start listening on %s:%d...\n" % Listen)
+    sys.stdout.flush()
     server.serve_forever()
