@@ -151,6 +151,7 @@ class LDAPAuthHandler(AuthHandler):
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
              'binddn': ('X-Ldap-BindDN', ''),
              'bindpasswd': ('X-Ldap-BindPass', ''),
+             'cacertfile': ('X-Ldap-CACertFile', ''),
              'cookiename': ('X-CookieName', '')
         }
 
@@ -188,6 +189,10 @@ class LDAPAuthHandler(AuthHandler):
             if not ctx['basedn']:
                 self.log_message('LDAP baseDN is not set!')
                 return 
+
+            if ctx['cacertfile']:
+                self.log_message('Setting CA Certificate to: %s' % ctx['cacertfile'])
+                ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, ctx['cacertfile'])
 
             ctx['action'] = 'initializing LDAP connection'
             ldap_obj = ldap.initialize(ctx['url']);
@@ -262,6 +267,8 @@ if __name__ == '__main__':
         help="LDAP bind DN (Default: anonymous)")
     group.add_argument('-w', metavar="passwd", dest="bindpw", default='',
         help="LDAP password for the bind DN (Default: unset)")
+    group.add_argument('-C', metavar="file", dest="cacertfile", default='',
+        help="LDAPS CA Certificate File (Default: unset)")
     group.add_argument('-f', '--filter', metavar='filter', 
         default='(cn=%(username)s)', 
         help="LDAP filter (Default: cn=%%(username)s)")
@@ -282,6 +289,7 @@ if __name__ == '__main__':
              'template': ('X-Ldap-Template', args.filter),
              'binddn': ('X-Ldap-BindDN', args.binddn),
              'bindpasswd': ('X-Ldap-BindPass', args.bindpw),
+             'cacertfile': ('X-Ldap-CACertFile', args.cacertfile),
              'cookiename': ('X-CookieName', args.cookie)
     }
     LDAPAuthHandler.set_params(auth_params)
