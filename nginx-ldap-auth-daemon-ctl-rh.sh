@@ -18,7 +18,7 @@ start() {
        echo -n "Already running !" && warning
        echo
     else
-       nohup ${CMD} >/dev/null 2>&1 &
+       nohup python ${CMD} >/dev/null 2>&1 &
        RETVAL=$?
        PID=$!
        [ $RETVAL -eq 0 ] && success || failure
