@@ -182,12 +182,12 @@ class LDAPAuthHandler(AuthHandler):
         try:
             # check that uri and baseDn are set
             # either from cli or a request
-            if not ctx['url']: 
+            if not ctx['url']:
                 self.log_message('LDAP URL is not set!')
                 return
             if not ctx['basedn']:
                 self.log_message('LDAP baseDN is not set!')
-                return 
+                return
 
             ctx['action'] = 'initializing LDAP connection'
             ldap_obj = ldap.initialize(ctx['url']);
@@ -247,14 +247,14 @@ if __name__ == '__main__':
         description="""Simple Nginx LDAP authentication helper.""")
     # Group for listen options:
     group = parser.add_argument_group("Listen options")
-    group.add_argument('--host',  metavar="hostname", 
+    group.add_argument('--host',  metavar="hostname",
         default="localhost", help="host to bind (Default: localhost)")
-    group.add_argument('-p', '--port', metavar="port", type=int, 
+    group.add_argument('-p', '--port', metavar="port", type=int,
         default=8888, help="port to bind (Default: 8888)")
     # ldap options:
     group = parser.add_argument_group(title="LDAP options")
     group.add_argument('-u', '--url', metavar="URL",
-        default="ldap://localhost:389", 
+        default="ldap://localhost:389",
         help=("LDAP URI to query (Default: ldap://localhost:389)"))
     group.add_argument('-b', metavar="baseDn", dest="basedn", default='',
         help="LDAP base dn (Default: unset)")
@@ -262,18 +262,18 @@ if __name__ == '__main__':
         help="LDAP bind DN (Default: anonymous)")
     group.add_argument('-w', metavar="passwd", dest="bindpw", default='',
         help="LDAP password for the bind DN (Default: unset)")
-    group.add_argument('-f', '--filter', metavar='filter', 
-        default='(cn=%(username)s)', 
+    group.add_argument('-f', '--filter', metavar='filter',
+        default='(cn=%(username)s)',
         help="LDAP filter (Default: cn=%%(username)s)")
     # http options:
     group = parser.add_argument_group(title="HTTP options")
-    group.add_argument('-R', '--realm', metavar='"Restricted Area"', 
+    group.add_argument('-R', '--realm', metavar='"Restricted Area"',
         default="Resticted", help='HTTP auth realm (Default: "Restricted")')
-    group.add_argument('-c', '--cookie', metavar="cookiename", 
+    group.add_argument('-c', '--cookie', metavar="cookiename",
         default="", help="HTTP cookie name to set in (Default: unset)")
 
     args = parser.parse_args()
-    global Listen 
+    global Listen
     Listen = (args.host, args.port)
     auth_params = {
              'realm': ('X-Ldap-Realm', args.realm),
