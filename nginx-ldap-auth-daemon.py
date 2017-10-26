@@ -1,8 +1,7 @@
-#!/bin/sh
-''''which python2 >/dev/null && exec python2 -u "$0" "$@" &>>$LOG # '''
-''''which python  >/dev/null && exec python  -u "$0" "$@" &>>$LOG # '''
-
+#!/usr/bin/env python2
+#
 # Copyright (C) 2014-2015 Nginx, Inc.
+#
 
 import sys, os, signal, base64, ldap, Cookie, argparse
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
