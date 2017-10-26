@@ -66,7 +66,7 @@ For detailed instructions, see [Configuring the Reference Implementation](https:
   proxy_cache_path <strong>cache/</strong> keys_zone=<strong>auth_cache</strong>:<strong>10m</strong>;
 
   upstream backend {
-    	server <strong>127.0.0.1</strong>:9000;
+      server <strong>127.0.0.1</strong>:9000;
   }
 
   server {
@@ -82,9 +82,6 @@ For detailed instructions, see [Configuring the Reference Implementation](https:
 
          # Base DN
          proxy_set_header X-Ldap-BaseDN "<strong>cn=Users,dc=test,dc=local</strong>";
-
-         # Bind DN
-         proxy_set_header X-Ldap-BindDN "<strong>cn=root,dc=test,dc=local</strong>";
 
          # Bind password
          proxy_set_header X-Ldap-BindPass "<strong>secret</strong>";
