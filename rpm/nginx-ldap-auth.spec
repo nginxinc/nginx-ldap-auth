@@ -29,6 +29,7 @@ mkdir -p %buildroot%_unitdir
 install -m644 %name.service %buildroot%_unitdir/
 install -d -m755 %buildroot/etc/default
 install -m644 %name.default %buildroot/etc/default/%name
+install -d -m755 %buildroot/etc/logrotate.d
 install -m644 %name.logrotate %buildroot%_sysconfdir/logrotate.d/%name
 
 %files
