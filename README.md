@@ -6,7 +6,7 @@ Reference implementation of method for authenticating users on behalf of servers
 
 **Note:** For ease of reading, this document refers to [NGINX Plus](http://www.nginx.com/products/), but it also applies to [open source NGINX](http://www.nginx.org/en). The prerequisite [ngx_http_auth_request_module](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html) module is included both in [NGINX Plus packages](http://cs.nginx.com/repo_setup) and [prebuilt open source NGINX binaries](http://nginx.org/en/linux_packages.html).
 
-The ngx-ldap-auth software is a reference implementation of a method for authenticating users who request protected resources from servers proxied by NGINX Plus. It includes a daemon (*ldap-auth*) that communicates with an authentication server, and a sample daemon that stands in for an actual back-end server during testing, by generating an authentication cookie based on the user’s credentials. The daemons are written in Python for use with a Lightweight Directory Access Protocol (LDAP) authentication server (OpenLDAP or Microsoft Windows Active Directory 2003 and 2012).
+The nginx-ldap-auth software is a reference implementation of a method for authenticating users who request protected resources from servers proxied by NGINX Plus. It includes a daemon (*ldap-auth*) that communicates with an authentication server, and a sample daemon that stands in for an actual back-end server during testing, by generating an authentication cookie based on the user’s credentials. The daemons are written in Python for use with a Lightweight Directory Access Protocol (LDAP) authentication server (OpenLDAP or Microsoft Windows Active Directory 2003 and 2012).
 
 The ldap-auth daemon, which mediates between NGINX Plus and the LDAP server, is intended to serve as a model for "connector" daemons written in other languages, for different authentication systems, or both. [NGINX, Inc. Professional Services](http://nginx.com/services/) is available to assist with such adaptations.
 
@@ -144,7 +144,7 @@ If you want to change the realm name from the default value (**Restricted**), un
 
 ### Authentication Server
 
-To modify the ldap-auth daemon to communicate with a different (non-LDAP) type of authentication server, write a new authentication-handler class to replace `LDAPAuthHandler` in the **ngx-ldap-auth-daemon.py** script.
+To modify the ldap-auth daemon to communicate with a different (non-LDAP) type of authentication server, write a new authentication-handler class to replace `LDAPAuthHandler` in the **nginx-ldap-auth-daemon.py** script.
 
 ## Compatibility
 
