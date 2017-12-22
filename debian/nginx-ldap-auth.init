@@ -42,7 +42,7 @@ case "$1" in
     SSDOPTS="--quiet --oknodo --background --no-close --make-pidfile --pidfile $PIDFILE --chuid $USER:$GROUP --exec $DAEMON"
     DAEMON_ARGS="$URL $BASE $BIND_DN $BIND_PASS $COOKIE $FILTER $REALM"
 
-	if start-stop-daemon --start $SSDOPTS -- $DAEMON_ARGS &>$LOG
+	if start-stop-daemon --start $SSDOPTS -- $DAEMON_ARGS > $LOG 2>&1
 	then
 		echo "$NAME."
 	else
