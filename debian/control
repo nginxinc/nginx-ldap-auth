@@ -9,6 +9,6 @@ Package: nginx-ldap-auth
 Architecture: all
 Depends:  systemd, python(>=2.6), python-ldap, python-argparse
 Description: a reference implementation of an authentication helper for Nginx
- This is a reference implementation of an authentication helper for Nginx. 
+ This is a reference implementation of an authentication helper for Nginx.
  It listens for incoming requests and uses parameters from headers
  to bind to a remote LDAP directory and try authenticating a person.

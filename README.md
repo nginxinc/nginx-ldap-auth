@@ -98,7 +98,7 @@ If the authentication server runs Active Directory rather than OpenLDAP, uncomme
 proxy_set_header X-Ldap-Template "(SAMAccountName=%(username)s)";
 ```
 
-In addition, the **X-Ldap-Template** header can be used to create complex LDAP searches. The code in ldap-auth-daemon creates a search filter that is based on this template header. By default, template is empty, and does not make any effect on LDAP search. However, you may decide for instance to authenticate only users from a specific user group (see LDAP documentation for more information regarding filters). 
+In addition, the **X-Ldap-Template** header can be used to create complex LDAP searches. The code in ldap-auth-daemon creates a search filter that is based on this template header. By default, template is empty, and does not make any effect on LDAP search. However, you may decide for instance to authenticate only users from a specific user group (see LDAP documentation for more information regarding filters).
 
 Suppose, your web resource should only be available for users from `group1` group.
 In such a case you can define `X-Ldap-Template` template as follows:
