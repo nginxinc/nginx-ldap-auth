@@ -1,4 +1,5 @@
 #!/bin/sh
+''''[ -z $LOG ] && export LOG=/dev/stdout # '''
 ''''which python2 >/dev/null && exec python2 -u "$0" "$@" >> $LOG 2>&1 # '''
 ''''which python  >/dev/null && exec python  -u "$0" "$@" >> $LOG 2>&1 # '''
 
