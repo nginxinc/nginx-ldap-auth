@@ -74,7 +74,7 @@ For detailed instructions, see [Configuring the Reference Implementation](https:
   proxy_cache_path <strong>cache/</strong> keys_zone=<strong>auth_cache</strong>:<strong>10m</strong>;
 
   upstream backend {
-    	server <strong>127.0.0.1</strong>:9000;
+      server <strong>127.0.0.1</strong>:9000;
   }
 
   server {
@@ -86,13 +86,13 @@ For detailed instructions, see [Configuring the Reference Implementation](https:
          proxy_cache_valid 200 <strong>10m</strong>;
 
          # URL and port for connecting to the LDAP server
-         proxy_set_header X-Ldap-URL "<strong>ldaps</strong>://<strong>example.com</strong>:<strong>636</strong>";
+         proxy_set_header X-Ldap-URL "<strong>ldap</strong>://<strong>example.com</strong>";
+
+         # Negotiate a TLS-enabled (STARTTLS) connection before sending credentials
+         proxy_set_header X-Ldap-Starttls "true";
 
          # Base DN
          proxy_set_header X-Ldap-BaseDN "<strong>cn=Users,dc=test,dc=local</strong>";
-
-         # Bind DN
-         proxy_set_header X-Ldap-BindDN "<strong>cn=root,dc=test,dc=local</strong>";
 
          # Bind password
          proxy_set_header X-Ldap-BindPass "<strong>secret</strong>";

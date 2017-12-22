@@ -148,6 +148,7 @@ class LDAPAuthHandler(AuthHandler):
              # parameter      header         default
              'realm': ('X-Ldap-Realm', 'Restricted'),
              'url': ('X-Ldap-URL', None),
+             'starttls': ('X-Ldap-Starttls', 'false'),
              'basedn': ('X-Ldap-BaseDN', None),
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
              'binddn': ('X-Ldap-BindDN', ''),
@@ -192,6 +193,20 @@ class LDAPAuthHandler(AuthHandler):
 
             ctx['action'] = 'initializing LDAP connection'
             ldap_obj = ldap.initialize(ctx['url']);
+
+            # Python-ldap module documentation advises to always
+            # explicitely set the LDAP version to use after running
+            # initialize() and recommends using LDAPv3. (LDAPv2 is
+            # deprecated since 2003 as per RFC3494)
+            #
+            # Also, the STARTTLS extension requires the
+            # use of LDAPv3 (RFC2830).
+            ldap_obj.protocol_version=ldap.VERSION3
+
+            # Establish a STARTTLS connection if required by the
+            # headers.
+            if ctx['starttls'] == 'true':
+                ldap_obj.start_tls_s()
 
             # See http://www.python-ldap.org/faq.shtml
             # uncomment, if required
@@ -257,6 +272,9 @@ if __name__ == '__main__':
     group.add_argument('-u', '--url', metavar="URL",
         default="ldap://localhost:389",
         help=("LDAP URI to query (Default: ldap://localhost:389)"))
+    group.add_argument('-s', '--starttls', metavar="starttls",
+        default="false",
+        help=("Establish a STARTTLS protected session (Default: false)"))
     group.add_argument('-b', metavar="baseDn", dest="basedn", default='',
         help="LDAP base dn (Default: unset)")
     group.add_argument('-D', metavar="bindDn", dest="binddn", default='',
@@ -279,6 +297,7 @@ if __name__ == '__main__':
     auth_params = {
              'realm': ('X-Ldap-Realm', args.realm),
              'url': ('X-Ldap-URL', args.url),
+             'starttls': ('X-Ldap-Starttls', args.starttls),
              'basedn': ('X-Ldap-BaseDN', args.basedn),
              'template': ('X-Ldap-Template', args.filter),
              'binddn': ('X-Ldap-BindDN', args.binddn),
