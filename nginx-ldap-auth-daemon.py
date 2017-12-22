@@ -268,7 +268,7 @@ if __name__ == '__main__':
     # http options:
     group = parser.add_argument_group(title="HTTP options")
     group.add_argument('-R', '--realm', metavar='"Restricted Area"',
-        default="Resticted", help='HTTP auth realm (Default: "Restricted")')
+        default="Restricted", help='HTTP auth realm (Default: "Restricted")')
     group.add_argument('-c', '--cookie', metavar="cookiename",
         default="", help="HTTP cookie name to set in (Default: unset)")
 
