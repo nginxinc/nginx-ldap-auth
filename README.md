@@ -74,7 +74,7 @@ For detailed instructions, see [Configuring the Reference Implementation](https:
   proxy_cache_path <strong>cache/</strong> keys_zone=<strong>auth_cache</strong>:<strong>10m</strong>;
 
   upstream backend {
-    	server <strong>127.0.0.1</strong>:9000;
+        server <strong>127.0.0.1</strong>:9000;
   }
 
   server {
