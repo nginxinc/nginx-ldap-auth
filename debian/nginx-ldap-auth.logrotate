@@ -1,4 +1,4 @@
-/var/log/nginx-ldap-auth/combined.log {
+/var/log/nginx-ldap-auth/daemon.log {
         daily
         missingok
         rotate 7
