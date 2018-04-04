@@ -149,7 +149,9 @@ class LDAPAuthHandler(AuthHandler):
              'realm': ('X-Ldap-Realm', 'Restricted'),
              'url': ('X-Ldap-URL', None),
              'starttls': ('X-Ldap-Starttls', 'false'),
+             'verifyca': ('X-Ldap-VerifyCa', 'true'),
              'basedn': ('X-Ldap-BaseDN', None),
+             'groupbasedn': ('X-Ldap-GroupBaseDN', None),
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
              'binddn': ('X-Ldap-BindDN', ''),
              'bindpasswd': ('X-Ldap-BindPass', ''),
@@ -190,6 +192,9 @@ class LDAPAuthHandler(AuthHandler):
             if not ctx['basedn']:
                 self.log_message('LDAP baseDN is not set!')
                 return
+              
+            if not ctx['groupbasedn']:
+                ctx['groupbasedn'] = ctx['basedn']
 
             ctx['action'] = 'initializing LDAP connection'
             ldap_obj = ldap.initialize(ctx['url']);
@@ -205,6 +210,9 @@ class LDAPAuthHandler(AuthHandler):
 
             # Establish a STARTTLS connection if required by the
             # headers.
+            if ctx['verifyca'] != 'true':
+                ldap_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+                ldap_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
             if ctx['starttls'] == 'true':
                 ldap_obj.start_tls_s()
 
@@ -238,8 +246,20 @@ class LDAPAuthHandler(AuthHandler):
 
             self.log_message('Auth OK for user "%s"' % (ctx['user']))
 
+            ctx['action'] = 'getting group membership'
+            search_filter='(|(&(objectClass=group)(member=' + ldap_dn + ')))'
+            results = ldap_obj.search_s(ctx['groupbasedn'], ldap.SCOPE_SUBTREE, search_filter, ['cn',])
+            group_names = {}
+            for group in results:
+                group_names[ group[1]['cn'][0] ] = ""
+            groups = sorted(group_names.keys())
+
             # Successfully authenticated user
             self.send_response(200)
+            #self.send_header('REMOTE_USER', ctx['user'] )
+            #self.send_header('REMOTE_GROUPS', '|'.join( groups ) )
+            for group in groups:
+                self.send_header('X-Ldap-MemberOf-'+group, "True" )
             self.end_headers()
 
         except:
@@ -272,11 +292,16 @@ if __name__ == '__main__':
     group.add_argument('-u', '--url', metavar="URL",
         default="ldap://localhost:389",
         help=("LDAP URI to query (Default: ldap://localhost:389)"))
+    group.add_argument('-k', '--verifyca', metavar="verifyca",
+        default="true",
+        help=("Verify root CA is correctly signed (disallow self-signed cerificates) (Default: true)"))
     group.add_argument('-s', '--starttls', metavar="starttls",
         default="false",
         help=("Establish a STARTTLS protected session (Default: false)"))
     group.add_argument('-b', metavar="baseDn", dest="basedn", default='',
         help="LDAP base dn (Default: unset)")
+    group.add_argument('-g', metavar="groupBaseDn", dest="groupbasedn", default=None,
+        help="LDAP user groups base dn (Default: same as base dn)")
     group.add_argument('-D', metavar="bindDn", dest="binddn", default='',
         help="LDAP bind DN (Default: anonymous)")
     group.add_argument('-w', metavar="passwd", dest="bindpw", default='',
@@ -298,7 +323,9 @@ if __name__ == '__main__':
              'realm': ('X-Ldap-Realm', args.realm),
              'url': ('X-Ldap-URL', args.url),
              'starttls': ('X-Ldap-Starttls', args.starttls),
+             'verifyca': ('X-Ldap-VerifyCa', args.starttls)
              'basedn': ('X-Ldap-BaseDN', args.basedn),
+             'groupbasedn': ('X-Ldap-GroupBaseDN', args.groupbasedn),
              'template': ('X-Ldap-Template', args.filter),
              'binddn': ('X-Ldap-BindDN', args.binddn),
              'bindpasswd': ('X-Ldap-BindPass', args.bindpw),
