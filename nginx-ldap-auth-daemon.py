@@ -18,6 +18,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 # Requests are processed in separate thread
 import threading
 from SocketServer import ThreadingMixIn
+import urllib
 class AuthHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 # -----------------------------------------------------------------------------
@@ -51,7 +52,7 @@ class AuthHandler(BaseHTTPRequestHandler):
         ctx['action'] = 'performing authorization'
         auth_header = self.headers.get('Authorization')
         auth_cookie = self.get_cookie(ctx['cookiename'])
-
+        auth_cookie = urllib.unquote(auth_cookie)    
         if auth_cookie != None and auth_cookie != '':
             auth_header = "Basic " + auth_cookie
             self.log_message("using username/password from cookie %s" %
@@ -71,9 +72,8 @@ class AuthHandler(BaseHTTPRequestHandler):
         ctx['action'] = 'decoding credentials'
 
         try:
-            auth_decoded = base64.b64decode(auth_header[6:])
+            auth_decoded = urllib.unquote(base64.b64decode(auth_header[6:]))
             user, passwd = auth_decoded.split(':', 1)
-
         except:
             self.auth_failed(ctx)
             return True
@@ -165,8 +165,7 @@ class LDAPAuthHandler(AuthHandler):
         return self.params
 
     # GET handler for the authentication request
-    def do_GET(self):
-
+    def do_GET(self):        
         ctx = dict()
         self.ctx = ctx
 
@@ -214,8 +213,7 @@ class LDAPAuthHandler(AuthHandler):
                 ldap_obj.set_option(ldap.OPT_REFERRALS, 0)
 
             ctx['action'] = 'binding as search user'
-            ldap_obj.bind_s(ctx['binddn'], ctx['bindpasswd'], ldap.AUTH_SIMPLE)
-
+            ldap_obj.bind_s(ctx['binddn'], ctx['bindpasswd'], ldap.AUTH_SIMPLE)            
             ctx['action'] = 'preparing search filter'
             searchfilter = ctx['template'] % { 'username': ctx['user'] }
 
