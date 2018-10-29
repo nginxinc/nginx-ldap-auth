@@ -97,6 +97,14 @@ http {
             proxy_pass http://backend/;
         }
 
+        location /ref1 {
+            auth_request /auth-ref1;
+
+            error_page 401 =200 /login;
+
+            proxy_pass http://backend/;
+        }
+
         location /login {
             proxy_pass http://backend/login;
 
@@ -195,6 +203,24 @@ http {
             proxy_set_header X-Ldap-BindDN   "cn=root,dc=test,dc=local";
             proxy_set_header X-Ldap-BindPass "secret";
         }
+
+        location = /auth-ref1 {
+            internal;
+
+            proxy_pass http://127.0.0.1:8888;
+
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+
+            proxy_set_header X-Ldap-URL      "ldap://127.0.0.1:8083";
+            proxy_set_header X-Ldap-BaseDN   "ou=Users,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindDN   "cn=root,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindPass "secret";
+
+            proxy_set_header X-CookieName "nginxauth";
+            proxy_set_header Cookie nginxauth=$cookie_nginxauth;
+        }
+
     }
 }
 
@@ -252,6 +278,43 @@ TLSCertificateKeyFile $d/localhost.key
 
 EOF
 
+$t->write_file_expand("slapd2.conf", <<"EOF");
+include /etc/openldap/schema/core.schema
+include /etc/openldap/schema/cosine.schema
+include /etc/openldap/schema/inetorgperson.schema
+include /etc/openldap/schema/nis.schema
+include /etc/openldap/schema/misc.schema
+
+pidfile  $d/slapd2.pid
+argsfile $d/slapd2.args
+logfile $d/slapd2.log
+
+loglevel 256 64
+
+access to dn.base="" by * read
+access to dn.base="cn=Subschema" by * read
+access to *
+  by self write
+  by users read
+  by anonymous read
+
+database hdb
+suffix "ou=Users, dc=test,dc=local"
+rootdn "cn=root, ou=Users, dc=test,dc=local"
+rootpw secret
+directory $d/openldap2-data
+index objectClass eq
+
+TLSCipherSuite HIGH:MEDIUM:+SSLv2
+TLSCACertificateFile $d/localhost.crt
+TLSCertificateFile $d/localhost.crt
+TLSCertificateKeyFile $d/localhost.key
+
+# our upstream
+referral   ldap://127.0.0.1:%%PORT_8083%%/
+
+EOF
+
 
 $t->write_file_expand("initial.ldif", <<'EOF');
 dn: dc=test,dc=local
@@ -296,6 +359,37 @@ mail: user3@example.com
 description: user3
 ou: Users
 
+dn: ou=more,ou=Users,dc=test,dc=local
+objectClass: referral
+objectClass: extensibleObject
+dc: subtree
+ref: ldap://127.0.0.1:%%PORT_8085%%/ou=more,ou=Users,dc=test,dc=local
+
+EOF
+
+
+$t->write_file_expand("initial2.ldif", <<'EOF');
+dn: ou=Users, dc=test,dc=local
+ou: Users
+description: All people in organisation
+objectclass: organizationalunit
+
+dn: ou=more,ou=Users,dc=test,dc=local
+dc: test
+description: BlaBlaBla
+objectClass: dcObject
+objectClass: organizationalUnit
+
+dn: cn=user4, ou=more, ou=Users,dc=test,dc=local
+objectclass: inetOrgPerson
+cn: User number one
+sn: u4
+uid: user4
+userpassword: user4secret
+mail: user4@example.com
+description: user4
+ou: Users
+
 EOF
 
 # -u ldap -g ldap
@@ -309,20 +403,29 @@ $t->has_daemon($SLAPD);
 $t->has_daemon($AUTHD);
 
 mkdir("$d/openldap-data");
+mkdir("$d/openldap2-data");
 
 my $p3 = port(8083);
 my $p4 = port(8084);
+my $p5 = port(8085);
 
 # change '0' to '1' or more to get debug from slapd
 $t->run_daemon($SLAPD, '-d', '0', '-f', "$d/slapd.conf",
 		'-h', "ldap://127.0.0.1:$p3 ldaps://127.0.0.1:$p4");
 
-$t->waitforsocket("127.0.0.1:$p3") or die "Can't start slapd";
+$t->run_daemon($SLAPD, '-d', '0', '-f', "$d/slapd2.conf",
+		'-h', "ldap://127.0.0.1:$p5");
 
+$t->waitforsocket("127.0.0.1:$p3") or die "Can't start slapd";
+$t->waitforsocket("127.0.0.1:$p5") or die "Can't start slapd2";
 
 system("ldapadd -H ldap://127.0.0.1:$p3 -x -D \"cn=root,dc=test,dc=local\""
        . " -f $d/initial.ldif -w secret >> $d/ldif.log 2>&1") == 0
 		or die "Can't import initial LDIF\n";
+
+system("ldapadd -H ldap://127.0.0.1:$p5 -x -D \"cn=root,ou=Users,dc=test,dc=local\""
+       . " -f $d/initial2.ldif -w secret >> $d/ldif2.log 2>&1") == 0
+		or die "Can't import initial2 LDIF\n";
 
 
 $t->write_file_expand("auth_daemon.sh", <<"EOF");
@@ -336,7 +439,7 @@ $t->run_daemon('/bin/sh', "$d/auth_daemon.sh");
 $t->waitforsocket('127.0.0.1:' . port(8888))
 	or die "Can't start auth daemon";
 
-$t->plan(19);
+$t->plan(21);
 
 $t->run();
 
@@ -386,6 +489,18 @@ like(http_get_auth('/nodn', 'user1', 'user1secret'), qr!Internal Server Error!,
 # url is not set, default is used, which is not accessible => login page
 like(http_get_auth('/nourl', 'user1', 'user1secret'), qr!LOGIN PAGE!,
 	'url must be set');
+
+# LDAP referrals
+
+# user can be found, but bind happens on 1st server, instead of the found
+# the behaviour may change with different servers
+like(http_get_auth('/ref1', 'user4', 'user4secret'), qr!LOGIN PAGE!,
+	'server2 user via referral on server1');
+
+# unknown user on referred server, result is empty dn
+like(http_get_auth('/ref1', 'userx', 'blah'), qr!LOGIN PAGE!,
+	'unknown user with referral on server1');
+
 
 ###############################################################################
 
