@@ -228,13 +228,27 @@ class LDAPAuthHandler(AuthHandler):
                                           searchfilter, ['objectclass'], 1)
 
             ctx['action'] = 'verifying search query results'
-            if len(results) < 1:
+
+            nres = len(results)
+
+            if nres < 1:
                 self.auth_failed(ctx, 'no objects found')
                 return
 
-            ctx['action'] = 'binding as an existing user'
-            ldap_dn = results[0][0]
-            ctx['action'] += ' "%s"' % ldap_dn
+            if nres > 1:
+                self.log_message("note: filter match multiple objects: %d, using first" % nres)
+
+            user_entry = results[0]
+            ldap_dn = user_entry[0]
+
+            if ldap_dn == None:
+                self.auth_failed(ctx, 'matched object has no dn')
+                return
+
+            self.log_message('attempting to bind using dn "%s"' % (ldap_dn))
+
+            ctx['action'] = 'binding as an existing user "%s"' % ldap_dn
+
             ldap_obj.bind_s(ldap_dn, ctx['pass'], ldap.AUTH_SIMPLE)
 
             self.log_message('Auth OK for user "%s"' % (ctx['user']))
