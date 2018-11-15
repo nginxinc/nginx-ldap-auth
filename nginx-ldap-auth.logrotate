@@ -1,4 +1,5 @@
 /var/log/nginx-ldap-auth/daemon.log {
+	compress
 	delaycompress
 	create 0644 nginx-ldap-auth nginx-ldap-auth
 	su nginx-ldap-auth nginx-ldap-auth
