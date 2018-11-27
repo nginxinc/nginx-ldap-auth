@@ -4,10 +4,13 @@
 #
 #URL="--url ldap://example.com:389"
 #BASE="-b dc=nodomain"
+#GROUP_BASE="-b dc=nodomain"
 #BIND_DN="-D cn=admin,dc=nodomain"
 #BIND_PASS="-w secret"
 #COOKIE="-c nginxauth"
 #FILTER="-f (cn=%(username)s)"
+#GROUP_FILTER="-x (cn=%(groupname)s)"
+#GROUP_LIMIT=""
 #REALM="-R 'Restricted Area'"
 
 # these are used with init scripts only

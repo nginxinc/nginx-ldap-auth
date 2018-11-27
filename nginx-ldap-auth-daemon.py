@@ -151,7 +151,10 @@ class LDAPAuthHandler(AuthHandler):
              'starttls': ('X-Ldap-Starttls', 'false'),
              'disable_referrals': ('X-Ldap-DisableReferrals', 'false'),
              'basedn': ('X-Ldap-BaseDN', None),
+             'groupbasedn': ('X-Ldap-GroupBaseDN', None),
+             'grouplimit': ('X-Ldap-GroupLimit', None),
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
+             'grouptemplate': ('X-Ldap-GroupTemplate', '(cn=%(groupname)s)'),
              'binddn': ('X-Ldap-BindDN', ''),
              'bindpasswd': ('X-Ldap-BindPass', ''),
              'cookiename': ('X-CookieName', '')
@@ -223,6 +226,9 @@ class LDAPAuthHandler(AuthHandler):
                               '"%s" with filter "%s"') %
                               (ctx['url'], ctx['basedn'], searchfilter))
 
+            self.log_message(('groupBaseDn is "%s", groupLimit is "%s"') %
+                              (ctx['groupbasedn'], ctx['grouplimit']))
+
             ctx['action'] = 'running search query'
             results = ldap_obj.search_s(ctx['basedn'], ldap.SCOPE_SUBTREE,
                                           searchfilter, ['objectclass'], 1)
@@ -252,6 +258,21 @@ class LDAPAuthHandler(AuthHandler):
             ldap_obj.bind_s(ldap_dn, ctx['pass'], ldap.AUTH_SIMPLE)
 
             self.log_message('Auth OK for user "%s"' % (ctx['user']))
+
+            if ctx['grouplimit'] and ctx['groupbasedn']:
+                groupsearchfilter = ctx['grouptemplate'] % { 'groupname': ctx['grouplimit'] }
+                groupResults = ldap_obj.search_s(ctx['groupbasedn'], ldap.SCOPE_SUBTREE,
+                                          groupsearchfilter, ["memberUid"])
+                if len(groupResults) > 0:
+                    for dn, entry in groupResults:
+                        if ctx['user'] in entry.get('memberUid'):
+                            self.log_message(('found user "%s" in group "%s"') %
+                                (ctx['user'], ctx['grouplimit']))
+                        else:
+                            self.log_message(('user "%s" NOT in group "%s"') %
+                                (ctx['user'], ctx['grouplimit']))
+                            self.auth_failed(ctx)
+                            return
 
             # Successfully authenticated user
             self.send_response(200)
@@ -295,6 +316,10 @@ if __name__ == '__main__':
         help=("Sets ldap.OPT_REFERRALS to zero (Default: false)"))
     group.add_argument('-b', metavar="baseDn", dest="basedn", default='',
         help="LDAP base dn (Default: unset)")
+    group.add_argument('-g', metavar="groupBaseDn", dest="groupbasedn", default='',
+        help="LDAP group base dn (Default: unset)")
+    group.add_argument('-G', metavar="groupLimit", dest="grouplimit", default='',
+        help="Limit to users in group (Default: unset)")
     group.add_argument('-D', metavar="bindDn", dest="binddn", default='',
         help="LDAP bind DN (Default: anonymous)")
     group.add_argument('-w', metavar="passwd", dest="bindpw", default='',
@@ -302,6 +327,9 @@ if __name__ == '__main__':
     group.add_argument('-f', '--filter', metavar='filter',
         default='(cn=%(username)s)',
         help="LDAP filter (Default: cn=%%(username)s)")
+    group.add_argument('-x', '--groupfilter', metavar='groupfilter',
+        default='(cn=%(groupname)s)',
+        help="LDAP group filter (Default: cn=%%(groupname)s)")
     # http options:
     group = parser.add_argument_group(title="HTTP options")
     group.add_argument('-R', '--realm', metavar='"Restricted Area"',
@@ -318,7 +346,10 @@ if __name__ == '__main__':
              'starttls': ('X-Ldap-Starttls', args.starttls),
              'disable_referrals': ('X-Ldap-DisableReferrals', args.disable_referrals),
              'basedn': ('X-Ldap-BaseDN', args.basedn),
+             'groupbasedn': ('X-Ldap-GroupBaseDN', args.groupbasedn),
+             'grouplimit': ('X-Ldap-GroupLimit', args.grouplimit),
              'template': ('X-Ldap-Template', args.filter),
+             'grouptemplate': ('X-Ldap-GroupTemplate', args.groupfilter),
              'binddn': ('X-Ldap-BindDN', args.binddn),
              'bindpasswd': ('X-Ldap-BindPass', args.bindpw),
              'cookiename': ('X-CookieName', args.cookie)
