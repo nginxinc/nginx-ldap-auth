@@ -116,6 +116,11 @@ In such a case you can define `X-Ldap-Template` template as follows:
 
 proxy_set_header X-Ldap-Template "(&(cn=%(username)s)(memberOf=cn=group1,cn=Users,dc=example,dc=com))";
 
+If your LDAP server doesn't support the memberOf overlay, you can use the following parameters:
+proxy_set_header X-Ldap-GroupBaseDN "ou=groups,dc=example,dc=com"
+proxy_set_header X-Ldap-GroupTemplate "(cn=%(groupname)s)"
+proxy_set_header X-Ldap-GroupLimit "group1"
+
 The search filters can be combined from less complex filters using boolean operations and can be rather complex.
 
 The reference implementation uses cookie-based authentication. If you are using HTTP basic authentication instead, comment out the following directives as shown:
