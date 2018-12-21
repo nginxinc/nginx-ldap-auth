@@ -13,4 +13,5 @@ RUN \
 
 EXPOSE 8888
 
-CMD ["python", "/usr/src/app/nginx-ldap-auth-daemon.py", "--host", "0.0.0.0", "--port", "8888"]
+ENTRYPOINT ["python", "/usr/src/app/nginx-ldap-auth-daemon.py"]
+CMD ["--host", "0.0.0.0", "--port", "8888"]
