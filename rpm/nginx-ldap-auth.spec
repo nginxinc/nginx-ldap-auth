@@ -1,5 +1,7 @@
+%global logdir  /var/log/%name
+
 Name:		nginx-ldap-auth
-Version:	0.0.3
+Version:	0.0.5
 Release:	1%{?dist}
 Summary:	NGINX Plus LDAP authentication daemon
 
@@ -31,14 +33,17 @@ install -d -m755 %buildroot/etc/default
 install -m644 %name.default %buildroot/etc/default/%name
 install -d -m755 %buildroot/etc/logrotate.d
 install -m644 %name.logrotate %buildroot%_sysconfdir/logrotate.d/%name
+mkdir -p %{buildroot}%{logdir}
+touch  %{buildroot}%{logdir}/daemon.log
 
 %files
 %doc README.md nginx-ldap-auth.conf backend-sample-app.py LICENSE
-/etc/default/%name
-%_sysconfdir/logrotate.d/%name
+%config(noreplace) /etc/default/%name
+%config(noreplace) %_sysconfdir/logrotate.d/%name
 %_bindir/nginx-ldap-auth-daemon
 %_unitdir/%name.service
-
+%attr(750,nginx-ldap-auth,nginx-ldap-auth) %dir %{logdir}
+%config %ghost %attr(640,nginx-ldap-auth,nginx-ldap-auth) %{logdir}/daemon.log
 
 %post
 getent group nginx-ldap-auth > /dev/null || groupadd -r nginx-ldap-auth
