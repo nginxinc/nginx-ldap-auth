@@ -49,24 +49,58 @@ class AppHandler(BaseHTTPRequestHandler):
         html="""
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-  <head>
-    <meta http-equiv=Content-Type content="text/html;charset=UTF-8">
-    <title>Auth form example</title>
-  </head>
-  <body>
-    <form action="/login" method="post">
-      <table>
-        <tr>
-          <td>Username: <input type="text" name="username"/></td>
-        <tr>
-          <td>Password: <input type="text" name="password"/></td>
-        <tr>
-          <td><input type="submit" value="Login"></td>
-      </table>
-        <input type="hidden" name="target" value="TARGET">
-    </form>
-  </body>
-</html>"""
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+form {
+  border: 2px solid #f1f1f1;
+  width: 60%;
+  margin: auto;
+}
+input[type=text], input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+h2 {
+  text-align: center;
+}
+button:hover {
+  opacity: 0.8;
+}
+.container {
+  padding: 30px;
+}
+</style>
+</head>
+<body>
+<h2>Authentication with LDAP Server</h2>
+<form action="/login", method="post">
+  <div class="container">
+    <label for="uname"><b>Username</b></label>
+    <input type="text" placeholder="Enter Username" name="username" required>
+    <label for="psw"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" name="password" required>
+    <button type="submit">Login</button>
+  </div>
+    <input type="hidden" name="target" value="TARGET">
+</form>
+</body>
+</html>
+"""
 
         self.send_response(200)
         self.end_headers()
