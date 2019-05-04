@@ -1,4 +1,4 @@
-FROM python:2-alpine
+FROM python:3-alpine
 
 COPY nginx-ldap-auth-daemon.py /usr/src/app/
 
@@ -10,6 +10,11 @@ RUN \
     apk --no-cache add --virtual build-dependencies build-base && \
     pip install python-ldap && \
     apk del build-dependencies
+
+# If you need to add your own certs, copy them in here and uncomment
+#RUN apk add ca-certificates && rm -rf /var/cache/apk/*
+#COPY ./certs/*.pem /usr/local/share/ca-certificates/
+#RUN update-ca-certificates
 
 EXPOSE 8888
 
