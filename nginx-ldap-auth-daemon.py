@@ -1,12 +1,15 @@
 #!/bin/sh
 ''''[ -z $LOG ] && export LOG=/dev/stdout # '''
-''''which python2 >/dev/null && exec python2 -u "$0" "$@" >> $LOG 2>&1 # '''
+''''which python3 >/dev/null && exec python3 -u "$0" "$@" >> $LOG 2>&1 # '''
 ''''which python  >/dev/null && exec python  -u "$0" "$@" >> $LOG 2>&1 # '''
 
 # Copyright (C) 2014-2015 Nginx, Inc.
 
-import sys, os, signal, base64, ldap, Cookie, argparse
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+import sys, os, signal, base64, ldap, http.cookies, argparse
+import random
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+if not hasattr(__builtins__, "basestring"): basestring = (str, bytes)
 
 #Listen = ('localhost', 8888)
 #Listen = "/tmp/auth.sock"    # Also uncomment lines in 'Requests are
@@ -17,7 +20,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 # -----------------------------------------------------------------------------
 # Requests are processed in separate thread
 import threading
-from SocketServer import ThreadingMixIn
+from socketserver import ThreadingMixIn
 class AuthHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 # -----------------------------------------------------------------------------
@@ -71,7 +74,7 @@ class AuthHandler(BaseHTTPRequestHandler):
         ctx['action'] = 'decoding credentials'
 
         try:
-            auth_decoded = base64.b64decode(auth_header[6:])
+            auth_decoded = base64.b64decode(auth_header[6:]).decode("utf-8")
             user, passwd = auth_decoded.split(':', 1)
 
         except:
@@ -87,7 +90,7 @@ class AuthHandler(BaseHTTPRequestHandler):
     def get_cookie(self, name):
         cookies = self.headers.get('Cookie')
         if cookies:
-            authcookie = Cookie.BaseCookie(cookies).get(name)
+            authcookie = http.cookies.BaseCookie(cookies).get(name)
             if authcookie:
                 return authcookie.value
             else:
@@ -193,7 +196,7 @@ class LDAPAuthHandler(AuthHandler):
                 return
 
             ctx['action'] = 'initializing LDAP connection'
-            ldap_obj = ldap.initialize(ctx['url']);
+            ldap_obj = ldap.initialize(ctx['url'])
 
             # Python-ldap module documentation advises to always
             # explicitely set the LDAP version to use after running
