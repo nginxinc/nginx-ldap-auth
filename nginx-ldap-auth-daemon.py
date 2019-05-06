@@ -6,7 +6,6 @@
 # Copyright (C) 2014-2015 Nginx, Inc.
 
 import sys, os, signal, base64, ldap, http.cookies, argparse
-import random
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 if not hasattr(__builtins__, "basestring"): basestring = (str, bytes)
