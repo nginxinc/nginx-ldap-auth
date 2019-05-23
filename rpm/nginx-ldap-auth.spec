@@ -1,5 +1,7 @@
+%global logdir  /var/log/%name
+
 Name:		nginx-ldap-auth
-Version:	0.0.3
+Version:	0.0.5
 Release:	1%{?dist}
 Summary:	NGINX Plus LDAP authentication daemon
 
@@ -31,25 +33,32 @@ install -d -m755 %buildroot/etc/default
 install -m644 %name.default %buildroot/etc/default/%name
 install -d -m755 %buildroot/etc/logrotate.d
 install -m644 %name.logrotate %buildroot%_sysconfdir/logrotate.d/%name
+install -d -m755 %{buildroot}%{logdir}
 
 %files
 %doc README.md nginx-ldap-auth.conf backend-sample-app.py LICENSE
-/etc/default/%name
-%_sysconfdir/logrotate.d/%name
+%config(noreplace) /etc/default/%name
+%config(noreplace) %_sysconfdir/logrotate.d/%name
 %_bindir/nginx-ldap-auth-daemon
 %_unitdir/%name.service
+%attr(750,nginx-ldap-auth,nginx-ldap-auth) %dir %{logdir}
 
-
-%post
+%pre
 getent group nginx-ldap-auth > /dev/null || groupadd -r nginx-ldap-auth
 getent passwd nginx-ldap-auth > /dev/null || \
     useradd -r -d /var/lib/nginx -g nginx-ldap-auth \
     -s /sbin/nologin -c "Nginx auth helper" nginx-ldap-auth
-/usr/bin/systemctl preset nginx-ldap-auth.service
+
+%post
+if [ $1 -eq 1 ]; then
+    /usr/bin/systemctl preset nginx-ldap-auth.service >/dev/null 2>&1 ||:
+fi;
 
 %preun
-/usr/bin/systemctl --no-reload disable nginx-ldap-auth.service >/dev/null 2>&1 ||:
-/usr/bin/systemctl stop nginx-ldap-auth.service >/dev/null 2>&1 ||:
+if [ $1 -eq 0 ]; then
+    /usr/bin/systemctl --no-reload disable nginx-ldap-auth.service >/dev/null 2>&1 ||:
+    /usr/bin/systemctl stop nginx-ldap-auth.service >/dev/null 2>&1 ||:
+fi;
 
 %postun
 /usr/bin/systemctl daemon-reload >/dev/null 2>&1 ||:
