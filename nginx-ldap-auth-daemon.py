@@ -260,19 +260,32 @@ class LDAPAuthHandler(AuthHandler):
             self.log_message('Auth OK for user "%s"' % (ctx['user']))
 
             if ctx['grouplimit'] and ctx['groupbasedn']:
-                groupsearchfilter = ctx['grouptemplate'] % { 'groupname': ctx['grouplimit'] }
+                groups = ctx['grouplimit'].split(",", -1)
+                groupsearchfilter = ''
+                for group in groups:
+                    if (groupsearchfilter == ''):
+                        groupsearchfilter = '(|' + (ctx['grouptemplate'] % { 'groupname': group })
+                    else:
+                        groupsearchfilter += (ctx['grouptemplate'] % { 'groupname': group })
+
+                groupsearchfilter += ')'
+
                 groupResults = ldap_obj.search_s(ctx['groupbasedn'], ldap.SCOPE_SUBTREE,
                                           groupsearchfilter, ["memberUid"])
+                foundInGroup = False
                 if len(groupResults) > 0:
                     for dn, entry in groupResults:
                         if ctx['user'] in entry.get('memberUid'):
                             self.log_message(('found user "%s" in group "%s"') %
-                                (ctx['user'], ctx['grouplimit']))
-                        else:
-                            self.log_message(('user "%s" NOT in group "%s"') %
-                                (ctx['user'], ctx['grouplimit']))
-                            self.auth_failed(ctx)
-                            return
+                                (ctx['user'], dn))
+                            foundInGroup = True
+                            break
+
+                if foundInGroup == False:
+                    self.log_message(('user not found in group(s) "%s"') %
+                        (ctx['grouplimit']))
+                    self.auth_failed(ctx)
+                    return
 
             # Successfully authenticated user
             self.send_response(200)

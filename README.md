@@ -126,6 +126,12 @@ proxy_set_header X-Ldap-GroupTemplate "(cn=%(groupname)s)"
 proxy_set_header X-Ldap-GroupLimit "group1"
 ```
 
+The limit can be done on multiple groups using:
+
+```
+proxy_set_header X-Ldap-GroupLimit "group1,group2"
+```
+
 The search filters can be combined from less complex filters using boolean operations and can be rather complex.
 
 The reference implementation uses cookie-based authentication. If you are using HTTP basic authentication instead, comment out the following directives as shown:
