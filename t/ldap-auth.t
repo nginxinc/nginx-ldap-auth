@@ -81,6 +81,30 @@ http {
             proxy_pass http://backend/;
         }
 
+        location /group1 {
+            auth_request /auth-proxy-group1;
+
+            error_page 401 =200 /login;
+
+            proxy_pass http://backend/;
+        }
+
+        location /group1and2 {
+            auth_request /auth-proxy-group1and2;
+
+            error_page 401 =200 /login;
+
+            proxy_pass http://backend/;
+        }
+
+        location /nogroup {
+            auth_request /auth-proxy-nogroup;
+
+            error_page 401 =200 /login;
+
+            proxy_pass http://backend/;
+        }
+
         location /nodn {
             auth_request /auth-nodn;
 
@@ -221,6 +245,70 @@ http {
             proxy_set_header Cookie nginxauth=$cookie_nginxauth;
         }
 
+        location = /auth-proxy-group1 {
+            internal;
+
+            proxy_pass http://127.0.0.1:8888;
+
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+
+            proxy_set_header X-Ldap-URL      "ldap://127.0.0.1:8083";
+            proxy_set_header X-Ldap-BaseDN   "ou=Users,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindDN   "cn=root,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindPass "secret";
+
+            proxy_set_header X-Ldap-GroupBaseDN "ou=Groups,dc=test,dc=local";
+            proxy_set_header X-Ldap-GroupFilter   "(cn=%(groupname)s)";
+            proxy_set_header X-Ldap-GroupLimit   "group1";
+
+            proxy_set_header X-CookieName "nginxauth";
+            proxy_set_header Cookie nginxauth=$cookie_nginxauth;
+        }
+
+        location = /auth-proxy-group1and2 {
+            internal;
+
+            proxy_pass http://127.0.0.1:8888;
+
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+
+            proxy_set_header X-Ldap-URL      "ldap://127.0.0.1:8083";
+            proxy_set_header X-Ldap-BaseDN   "ou=Users,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindDN   "cn=root,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindPass "secret";
+
+            proxy_set_header X-Ldap-GroupBaseDN "ou=Groups,dc=test,dc=local";
+            proxy_set_header X-Ldap-GroupFilter   "(cn=%(groupname)s)";
+            proxy_set_header X-Ldap-GroupLimit   "group1,group2";
+
+            proxy_set_header X-CookieName "nginxauth";
+            proxy_set_header Cookie nginxauth=$cookie_nginxauth;
+        }
+
+        location = /auth-proxy-nogroup {
+            internal;
+
+            proxy_pass http://127.0.0.1:8888;
+
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+
+            proxy_set_header X-Ldap-URL      "ldap://127.0.0.1:8083";
+            proxy_set_header X-Ldap-BaseDN   "ou=Users,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindDN   "cn=root,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindPass "secret";
+
+            proxy_set_header X-Ldap-GroupBaseDN "ou=Groups,dc=test,dc=local";
+            proxy_set_header X-Ldap-GroupFilter   "(cn=%(groupname)s)";
+            proxy_set_header X-Ldap-GroupLimit   "nogroup";
+
+            proxy_set_header X-CookieName "nginxauth";
+            proxy_set_header Cookie nginxauth=$cookie_nginxauth;
+        }
+
+
     }
 }
 
@@ -291,6 +379,9 @@ logfile $d/slapd2.log
 
 loglevel 256 64
 
+modulepath      /usr/lib/ldap
+moduleload      back_hdb
+
 access to dn.base="" by * read
 access to dn.base="cn=Subschema" by * read
 access to *
@@ -329,6 +420,11 @@ ou: Users
 description: All people in organisation
 objectclass: organizationalunit
 
+dn: ou=Groups, dc=test,dc=local
+ou: Groups
+description: All groups in organisation
+objectclass: organizationalunit
+
 dn: cn=user1,ou=Users,dc=test,dc=local
 objectclass: inetOrgPerson
 cn: User number one
@@ -358,6 +454,19 @@ userpassword: user3secret
 mail: user3@example.com
 description: user3
 ou: Users
+
+dn: cn=group1,ou=Groups,dc=test,dc=local
+cn: group1
+objectclass: posixGroup
+gidNumber: 1001
+memberUid: user1
+
+dn: cn=group2,ou=Groups,dc=test,dc=local
+cn: group2
+objectclass: posixGroup
+gidNumber: 1002
+memberUid: user2
+memberUid: user3
 
 dn: ou=more,ou=Users,dc=test,dc=local
 objectClass: referral
@@ -439,7 +548,7 @@ $t->run_daemon('/bin/sh', "$d/auth_daemon.sh");
 $t->waitforsocket('127.0.0.1:' . port(8888))
 	or die "Can't start auth daemon";
 
-$t->plan(21);
+$t->plan(26);
 
 $t->run();
 
@@ -481,6 +590,21 @@ like(http_get_auth('/ssl', 'user1', 'user1secret'), qr!ACCESS GRANTED!,
 
 like(http_get_auth('/starttls', 'user1', 'user1secret'), qr!ACCESS GRANTED!,
 	'proper user with proper pass with starttls');
+
+like(http_get_auth('/group1', 'user1', 'wrongpass'), qr!LOGIN PAGE!,
+	'proper user with wrong pass in proper group');
+
+like(http_get_auth('/group1', 'user1', 'user1secret'), qr!ACCESS GRANTED!,
+	'proper user with proper pass in proper group');
+
+like(http_get_auth('/group1', 'user3', 'user3secret'), qr!LOGIN PAGE!,
+	'proper user with proper pass in wrong group');
+
+like(http_get_auth('/group1and2', 'user2', 'user2secret'), qr!ACCESS GRANTED!,
+	'proper user with proper pass in one of matching groups');
+
+like(http_get_auth('/nogroup', 'user1', 'user1secret'), qr!LOGIN PAGE!,
+	'proper user with proper pass in non-existent group');
 
 # dn is not set, no default, daemon error => 502
 like(http_get_auth('/nodn', 'user1', 'user1secret'), qr!Internal Server Error!,
