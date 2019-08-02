@@ -50,7 +50,8 @@ class AuthHandler(BaseHTTPRequestHandler):
 
         ctx['action'] = 'performing authorization'
         auth_header = self.headers.get('Authorization')
-        auth_cookie = self.get_cookie(ctx['cookiename'])
+        cookiename = ctx['cookiename']
+        auth_cookie = self.get_cookie(cookiename)
 
         if auth_cookie != None and auth_cookie != '':
             auth_header = "Basic " + auth_cookie
@@ -71,6 +72,9 @@ class AuthHandler(BaseHTTPRequestHandler):
         ctx['action'] = 'decoding credentials'
 
         try:
+            if cookiename != None and cookiename != '':
+                ctx['cookievalue'] = auth_header[6:]
+
             auth_decoded = base64.b64decode(auth_header[6:])
             user, passwd = auth_decoded.split(':', 1)
 
@@ -255,6 +259,10 @@ class LDAPAuthHandler(AuthHandler):
 
             # Successfully authenticated user
             self.send_response(200)
+            cookievalue = ctx['cookievalue']
+            if cookievalue != None:
+                # Cookie.SimpleCookie() causes issues with double quotes
+                self.send_header("Set-Cookie", "%s=%s" % (ctx['cookiename'], cookievalue))
             self.end_headers()
 
         except:
