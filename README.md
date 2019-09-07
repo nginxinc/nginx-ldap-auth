@@ -32,7 +32,7 @@ To install and configure the reference implementation, perform the following ste
 
 1. On the host where the ldap-auth daemon is to run, install the following additional software. We recommend using the versions that are distributed with the operating system, instead of downloading the software from an open source repository.
 
-    - Python version 2 and 3 are supported.
+    - Python versions 2 and 3 are supported.
     - The Python LDAP module, **python-ldap** (created by the [python-ldap.org](http://www.python-ldap.org) open source project).
 
 1. Copy the following files from your repository clone to the indicated hosts:
