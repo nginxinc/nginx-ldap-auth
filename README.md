@@ -32,7 +32,7 @@ To install and configure the reference implementation, perform the following ste
 
 1. On the host where the ldap-auth daemon is to run, install the following additional software. We recommend using the versions that are distributed with the operating system, instead of downloading the software from an open source repository.
 
-    - Python version 2. Version 3 is not supported.
+    - Python version 2 and 3 are supported.
     - The Python LDAP module, **python-ldap** (created by the [python-ldap.org](http://www.python-ldap.org) open source project).
 
 1. Copy the following files from your repository clone to the indicated hosts:
@@ -43,6 +43,10 @@ To install and configure the reference implementation, perform the following ste
       ```
       docker build -t nginx-ldap-auth-daemon .
       docker run nginx-ldap-auth-daemon
+      ```
+      If you desire to use a container with Python3, you can supply an appropriate build argument:
+      ```
+      docker build -t nginx-ldap-auth-daemon --build-arg PYTHON_VERSION=3 .
       ```
       
     - **nginx-ldap-auth-daemon-ctl.sh** – Sample shell script for starting and stopping the daemon. Install on the same host as the ldap-auth daemon.
