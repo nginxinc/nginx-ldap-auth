@@ -1,4 +1,5 @@
-FROM python:2-alpine
+ARG PYTHON_VERSION=2
+FROM python:${PYTHON_VERSION}-alpine
 
 COPY nginx-ldap-auth-daemon.py /usr/src/app/
 
