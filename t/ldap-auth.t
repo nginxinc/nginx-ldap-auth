@@ -264,6 +264,7 @@ access to *
   by users read
   by anonymous read
 
+moduleload     back_hdb
 database hdb
 suffix "dc=test,dc=local"
 rootdn "cn=root,dc=test,dc=local"
@@ -298,6 +299,7 @@ access to *
   by users read
   by anonymous read
 
+moduleload     back_hdb
 database hdb
 suffix "ou=Users, dc=test,dc=local"
 rootdn "cn=root, ou=Users, dc=test,dc=local"

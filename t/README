@@ -1,3 +1,10 @@
+To run tests use supplied Dockerfile.test:
+
+docker build -f Dockerfile.test -t my-tag .
+docker run my-tag
+
+To run without Docker:
+
 Test suite is available at http://hg.nginx.org/nginx-tests.
 Check the http://hg.nginx.org/nginx-tests/file/tip/README file
 for instructions on how to use it.
