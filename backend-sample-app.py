@@ -1,5 +1,4 @@
 #!/bin/sh
-''''which python2 >/dev/null && exec python2 "$0" "$@" # '''
 ''''which python  >/dev/null && exec python  "$0" "$@" # '''
 
 # Copyright (C) 2014-2015 Nginx, Inc.
@@ -9,13 +8,29 @@
 # 1) accepts GET  requests on /login and responds with a login form
 # 2) accepts POST requests on /login, sets a cookie, and responds with redirect
 
-import sys, os, signal, base64, Cookie, cgi, urlparse
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+import sys, os, signal, base64, cgi
+if sys.version_info.major == 2:
+    from urlparse import urlparse
+    from Cookie import BaseCookie
+    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+elif sys.version_info.major == 3:
+    from urllib.parse import urlparse
+    from http.cookies import BaseCookie
+    from http.server import HTTPServer, BaseHTTPRequestHandler
 
 Listen = ('localhost', 9000)
 
 import threading
-from SocketServer import ThreadingMixIn
+if sys.version_info.major == 2:
+    from SocketServer import ThreadingMixIn
+elif sys.version_info.major == 3:
+    from socketserver import ThreadingMixIn
+
+
+def ensure_bytes(data):
+    return data if sys.version_info.major == 2 else data.encode("utf-8")
+
+
 class AuthHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 
@@ -23,14 +38,14 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
-        url = urlparse.urlparse(self.path)
+        url = urlparse(self.path)
 
         if url.path.startswith("/login"):
             return self.auth_form()
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write('Hello, world! Requested URL: ' + self.path + '\n')
+        self.wfile.write(ensure_bytes('Hello, world! Requested URL: ' + self.path + '\n'))
 
 
     # send login form html
@@ -70,7 +85,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(html.replace('TARGET', target))
+        self.wfile.write(ensure_bytes(html.replace('TARGET', target)))
 
 
     # processes posted form and sets the cookie with login/password
@@ -103,8 +118,8 @@ class AppHandler(BaseHTTPRequestHandler):
             # and share a key with auth daemon that extracts this information
             #
             # WARNING WARNING WARNING
-            enc = base64.b64encode(user + ':' + passwd)
-            self.send_header('Set-Cookie', 'nginxauth=' + enc + '; httponly')
+            enc = base64.b64encode(ensure_bytes(user + ':' + passwd))
+            self.send_header('Set-Cookie', b'nginxauth=' + enc + b'; httponly')
 
             self.send_header('Location', target)
             self.end_headers()

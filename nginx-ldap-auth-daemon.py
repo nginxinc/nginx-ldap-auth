@@ -1,12 +1,18 @@
 #!/bin/sh
 ''''[ -z $LOG ] && export LOG=/dev/stdout # '''
-''''which python2 >/dev/null && exec python2 -u "$0" "$@" >> $LOG 2>&1 # '''
 ''''which python  >/dev/null && exec python  -u "$0" "$@" >> $LOG 2>&1 # '''
 
 # Copyright (C) 2014-2015 Nginx, Inc.
 
-import sys, os, signal, base64, ldap, Cookie, argparse
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+import sys, os, signal, base64, ldap, argparse
+if sys.version_info.major == 2:
+    from Cookie import BaseCookie
+    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+elif sys.version_info.major == 3:
+    from http.cookies import BaseCookie
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+
+if not hasattr(__builtins__, "basestring"): basestring = (str, bytes)
 
 #Listen = ('localhost', 8888)
 #Listen = "/tmp/auth.sock"    # Also uncomment lines in 'Requests are
@@ -17,7 +23,11 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 # -----------------------------------------------------------------------------
 # Requests are processed in separate thread
 import threading
-from SocketServer import ThreadingMixIn
+if sys.version_info.major == 2:
+    from SocketServer import ThreadingMixIn
+elif sys.version_info.major == 3:
+    from socketserver import ThreadingMixIn
+
 class AuthHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 # -----------------------------------------------------------------------------
@@ -72,6 +82,7 @@ class AuthHandler(BaseHTTPRequestHandler):
 
         try:
             auth_decoded = base64.b64decode(auth_header[6:])
+            if sys.version_info.major == 3: auth_decoded = auth_decoded.decode("utf-8")
             user, passwd = auth_decoded.split(':', 1)
 
         except:
@@ -87,7 +98,7 @@ class AuthHandler(BaseHTTPRequestHandler):
     def get_cookie(self, name):
         cookies = self.headers.get('Cookie')
         if cookies:
-            authcookie = Cookie.BaseCookie(cookies).get(name)
+            authcookie = BaseCookie(cookies).get(name)
             if authcookie:
                 return authcookie.value
             else:
