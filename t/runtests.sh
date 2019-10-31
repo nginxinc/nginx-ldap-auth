@@ -10,4 +10,4 @@ perl ldap-auth.t
 
 testdir=$(find /tmp -name 'nginx-test-*' -print -quit)
 cd $testdir
-coverage2 html && printf "Coverage report: docker cp <cid>:$testdir/htmlcov <hostdir>\n"
+coverage html && printf "Coverage report: docker cp <cid>:$testdir/htmlcov <hostdir>\n"

@@ -433,7 +433,7 @@ system("ldapadd -H ldap://127.0.0.1:$p5 -x -D \"cn=root,ou=Users,dc=test,dc=loca
 $t->write_file_expand("auth_daemon.sh", <<"EOF");
 AUTHBIN=\$(realpath $AUTHD)
 cd $d
-exec coverage2 run \$AUTHBIN --host 127.0.0.1 \\
+exec coverage run \$AUTHBIN --host 127.0.0.1 \\
     -p %%PORT_8888%% >$d/nginx-ldap-auth-dameon.stdlog 2>&1
 EOF
 

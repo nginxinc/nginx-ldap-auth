@@ -1,6 +1,11 @@
 To run tests use supplied Dockerfile.test:
 
-docker build -f Dockerfile.test -t my-tag .
+docker build -f Dockerfile.test -t my-tag
+
+If you desire to use a container with Python3, you can supply an appropriate
+build argument:
+
+docker build -f Dockerfile.test -t my-tag --build-arg PYTHON_VERSION=3 .
 docker run my-tag
 
 To run without Docker:
