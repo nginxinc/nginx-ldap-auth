@@ -74,7 +74,7 @@ class AppHandler(BaseHTTPRequestHandler):
         <tr>
           <td>Username: <input type="text" name="username"/></td>
         <tr>
-          <td>Password: <input type="text" name="password"/></td>
+          <td>Password: <input type="password" name="password"/></td>
         <tr>
           <td><input type="submit" value="Login"></td>
       </table>
@@ -119,6 +119,8 @@ class AppHandler(BaseHTTPRequestHandler):
             #
             # WARNING WARNING WARNING
             enc = base64.b64encode(ensure_bytes(user + ':' + passwd))
+            if sys.version_info.major == 3:
+                enc = enc.decode()
             self.send_header('Set-Cookie', b'nginxauth=' + enc + b'; httponly')
 
             self.send_header('Location', target)
