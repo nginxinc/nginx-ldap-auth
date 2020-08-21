@@ -164,6 +164,7 @@ class LDAPAuthHandler(AuthHandler):
              'basedn': ('X-Ldap-BaseDN', None),
              'template': ('X-Ldap-Template', '(cn=%(username)s)'),
              'binddn': ('X-Ldap-BindDN', ''),
+             'groupdn': ('X-Ldap-GroupDN', ''),
              'bindpasswd': ('X-Ldap-BindPass', ''),
              'cookiename': ('X-CookieName', '')
         }
@@ -226,38 +227,63 @@ class LDAPAuthHandler(AuthHandler):
 
             ctx['action'] = 'binding as search user'
             ldap_obj.bind_s(ctx['binddn'], ctx['bindpasswd'], ldap.AUTH_SIMPLE)
+            
+            # Search memberUid in groupdn if defined
+            if ctx['groupdn']:
+                self.log_message('GroupDN defined to {}'.format(ctx['groupdn']))
+                
+                ctx['action'] = 'preparing search filter'
+                searchfilter = "(memberUid=%s)" % ctx['user']
 
+                self.log_message(('searching on server "%s" with base dn ' +\
+                              '"%s" with filter "%s"') %
+                              (ctx['url'], ctx['groupdn'], searchfilter))
+ 
+                ctx['action'] = 'running search query in GroupDN'
+                results = ldap_obj.search_s(ctx['groupdn'], ldap.SCOPE_SUBTREE,
+                                          searchfilter, ['objectclass'], 1)
+
+                ctx['action'] = 'verifying search query results for GroupDN'
+                nres = len(results)
+
+                if nres < 1:
+                    self.auth_failed(ctx, 'no memberUid found')
+                    return
+                
+                self.log_message("MemberUid found in GroupDN")
+                
+            # Search filter
             ctx['action'] = 'preparing search filter'
             searchfilter = ctx['template'] % { 'username': ctx['user'] }
-
+   
             self.log_message(('searching on server "%s" with base dn ' + \
                               '"%s" with filter "%s"') %
                               (ctx['url'], ctx['basedn'], searchfilter))
-
+   
             ctx['action'] = 'running search query'
             results = ldap_obj.search_s(ctx['basedn'], ldap.SCOPE_SUBTREE,
                                           searchfilter, ['objectclass'], 1)
-
+   
             ctx['action'] = 'verifying search query results'
-
+   
             nres = len(results)
-
+   
             if nres < 1:
                 self.auth_failed(ctx, 'no objects found')
                 return
-
+   
             if nres > 1:
                 self.log_message("note: filter match multiple objects: %d, using first" % nres)
-
+   
             user_entry = results[0]
             ldap_dn = user_entry[0]
-
+   
             if ldap_dn == None:
                 self.auth_failed(ctx, 'matched object has no dn')
                 return
 
             self.log_message('attempting to bind using dn "%s"' % (ldap_dn))
-
+            
             ctx['action'] = 'binding as an existing user "%s"' % ldap_dn
 
             ldap_obj.bind_s(ldap_dn, ctx['pass'], ldap.AUTH_SIMPLE)
@@ -313,6 +339,8 @@ if __name__ == '__main__':
     group.add_argument('-f', '--filter', metavar='filter',
         default='(cn=%(username)s)',
         help="LDAP filter (Default: cn=%%(username)s)")
+    group.add_argument('-g', metavar='groupdn', dest="groupdn", default='',
+        help="LDAP groupDN that must contain the memberUid=username (Default: unset)")
     # http options:
     group = parser.add_argument_group(title="HTTP options")
     group.add_argument('-R', '--realm', metavar='"Restricted Area"',
@@ -330,6 +358,7 @@ if __name__ == '__main__':
              'disable_referrals': ('X-Ldap-DisableReferrals', args.disable_referrals),
              'basedn': ('X-Ldap-BaseDN', args.basedn),
              'template': ('X-Ldap-Template', args.filter),
+             'groupdn': ('X-Ldap-GroupDN', args.groupdn),
              'binddn': ('X-Ldap-BindDN', args.binddn),
              'bindpasswd': ('X-Ldap-BindPass', args.bindpw),
              'cookiename': ('X-CookieName', args.cookie)

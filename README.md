@@ -134,6 +134,17 @@ The reference implementation uses cookie-based authentication. If you are using 
 <strong>#</strong>proxy_set_header Cookie nginxauth=$cookie_nginxauth;
 </pre>
 
+
+If you don't have memberOf in ldap and need check user in group by memberUid, set **X-Ldap-GroupDN**
+
+```
+proxy_set_header X-Ldap-GroupDN "cn=mygroup,ou=Group,dc=test,dc=com";
+```
+
+This will check if memberUid=username is in the specified group.
+
+
+
 ## Customization
 ### Caching
 
