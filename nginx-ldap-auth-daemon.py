@@ -218,6 +218,10 @@ class LDAPAuthHandler(AuthHandler):
             # Establish a STARTTLS connection if required by the
             # headers.
             if ctx['starttls'] == 'true':
+                cacert_file = os.getenv("LDAP_CA_CERT")
+                if cacert_file:
+                    ldap_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, cacert_file)
+                    ldap_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
                 ldap_obj.start_tls_s()
 
             # See https://www.python-ldap.org/en/latest/faq.html
