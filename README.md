@@ -112,7 +112,7 @@ http {
 }
 </pre>
 
-If the authentication server runs Active Directory rather than OpenLDAP, uncomment the following directive as shown:
+If the authentication server runs Active Directory rather than OpenLDAP, set the following directive as shown:
 ```
 proxy_set_header X-Ldap-Template "(sAMAccountName=%(username)s)";
 ```
@@ -121,51 +121,53 @@ In addition, the **X-Ldap-Template** header can be used to create complex LDAP s
 
 Suppose, your web resource should only be available for users from `group1` group.
 In such a case you can define `X-Ldap-Template` template as follows:
-```
+```nginx
 proxy_set_header X-Ldap-Template "(&(cn=%(username)s)(memberOf=cn=group1,cn=Users,dc=example,dc=com))";
 ```
 
 The search filters can be combined from less complex filters using boolean operations and can be rather complex.
 
-The reference implementation uses cookie-based authentication. If you are using HTTP basic authentication instead, comment out the following directives as shown:
+The reference implementation uses cookie-based authentication. If you are using HTTP basic authentication instead, set the following directives to have an empty value, as shown:
 
-<pre>
-<strong>#</strong>proxy_set_header X-CookieName "nginxauth";
-<strong>#</strong>proxy_set_header Cookie nginxauth=$cookie_nginxauth;
-</pre>
+```nginx
+proxy_set_header X-CookieName "";
+proxy_set_header Cookie "";
+```
 
 ## Customization
 ### Caching
 
 The **nginx-ldap-auth.conf** file enables caching of both data and credentials. To disable caching, comment out the four `proxy_cache*` directives as shown:
-<pre>
+```nginx
 http {
   ...
-  <strong>#</strong>proxy_cache_path cache/ keys_zone=auth_cache:10m;
+  #proxy_cache_path cache/ keys_zone=auth_cache:10m;
   ...
   server {
     ...
     location = /auth-proxy {
-      <strong>#</strong>proxy_cache auth_cache;
+      #proxy_cache auth_cache;
       # note that cookie is added to cache key
-      <strong>#</strong>proxy_cache_key "$http_authorization$cookie_nginxauth";
-      <strong>#</strong>proxy_cache_valid 200 10m;
+      #proxy_cache_key "$http_authorization$cookie_nginxauth";
+      #proxy_cache_valid 200 10m;
      }
    }
 }
-</pre>
+```
 
 ### Optional LDAP Parameters
 
-If you want to change the value for the `template` parameter that the ldap-auth daemon passes to the OpenLDAP server by default, uncomment the following directive as shown, and change the value:
-<pre>
-proxy_set_header X-Ldap-Template "<strong>(cn=%(username)s)</strong>";
-</pre>
+If you want to change the value for the `template` parameter that the ldap-auth daemon passes to the OpenLDAP server by default, set the following directive as shown, and change the value:
+```nginx
+proxy_set_header X-Ldap-Template "(cn=%(username)s)";
+```
 
-If you want to change the realm name from the default value (**Restricted**), uncomment and change the following directive:
-<pre>
-proxy_set_header X-Ldap-Realm "<strong>Restricted</strong>";
-</pre>
+If you want to change the realm name from the default value (**Restricted**), set the following directive:
+```nginx
+proxy_set_header X-Ldap-Realm "Restricted";
+```
+
+> **Note:** All LDAP parameters must have a value, even optional ones. Use the empty string (`""`) for unused parameters (do not comment).
 
 ### Authentication Server
 
