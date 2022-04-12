@@ -8,6 +8,7 @@
 #BIND_PASS="-w secret"
 #COOKIE="-c nginxauth"
 #FILTER="-f (cn=%(username)s)"
+#GROUPDN="-g cn=mygroup,ou=Group,dc=test,dc=com"
 #REALM="-R 'Restricted Area'"
 
 # these are used with init scripts only
