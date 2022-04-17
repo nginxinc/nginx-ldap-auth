@@ -2,9 +2,16 @@
 ''''[ -z $LOG ] && export LOG=/dev/stdout # '''
 ''''which python  >/dev/null && exec python  -u "$0" "$@" >> $LOG 2>&1 # '''
 
-# Copyright (C) 2014-2015 Nginx, Inc.
+# Copyright (C) 2014-2022 Nginx, Inc.
 
-import sys, os, signal, base64, ldap, argparse
+import sys
+import os
+import signal
+import base64
+import ldap
+from ldap.filter import escape_filter_chars
+import argparse
+
 if sys.version_info.major == 2:
     from Cookie import BaseCookie
     from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -23,6 +30,7 @@ if not hasattr(__builtins__, "basestring"): basestring = (str, bytes)
 # -----------------------------------------------------------------------------
 # Requests are processed in separate thread
 import threading
+
 if sys.version_info.major == 2:
     from SocketServer import ThreadingMixIn
 elif sys.version_info.major == 3:
@@ -88,9 +96,9 @@ class AuthHandler(BaseHTTPRequestHandler):
         except:
             self.auth_failed(ctx)
             return True
-
-        ctx['user'] = user
+       
         ctx['pass'] = passwd
+        ctx['user'] = ldap.filter.escape_filter_chars(user)
 
         # Continue request processing
         return False
@@ -228,7 +236,7 @@ class LDAPAuthHandler(AuthHandler):
             ldap_obj.bind_s(ctx['binddn'], ctx['bindpasswd'], ldap.AUTH_SIMPLE)
 
             ctx['action'] = 'preparing search filter'
-            searchfilter = ctx['template'] % { 'username': ctx['user'] }
+            searchfilter = ctx['template'] % {'username': ctx['user']}
 
             self.log_message(('searching on server "%s" with base dn ' + \
                               '"%s" with filter "%s"') %

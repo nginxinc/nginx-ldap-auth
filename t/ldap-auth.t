@@ -105,6 +105,15 @@ http {
             proxy_pass http://backend/;
         }
 
+        location /query-injection {
+            auth_request /auth-query-injection;
+	    
+	    error_page 401 =200 /login;
+	    
+	    proxy_pass http://backend/;
+       
+        }
+
         location /login {
             proxy_pass http://backend/login;
 
@@ -221,6 +230,24 @@ http {
             proxy_set_header Cookie nginxauth=$cookie_nginxauth;
         }
 
+        location = /auth-query-injection {
+            internal;
+
+            proxy_pass http://127.0.0.1:8888;
+
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+
+            proxy_set_header X-Ldap-URL      "ldap://127.0.0.1:8083";
+            proxy_set_header X-Ldap-BaseDN   "ou=Users,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindDN   "cn=root,dc=test,dc=local";
+            proxy_set_header X-Ldap-BindPass "secret";
+           
+            proxy_set_header X-CookieName "nginxauth";
+            proxy_set_header Cookie nginxauth=$cookie_nginxauth;
+	    
+            proxy_set_header X-Ldap-Template '(|(&(memberOf=superadmin)(cn=%(username)s))(&(memberOf=admin)(cn=%(username)s)))';
+        }
     }
 }
 
@@ -321,7 +348,7 @@ EOF
 $t->write_file_expand("initial.ldif", <<'EOF');
 dn: dc=test,dc=local
 dc: test
-description: BlaBlaBla
+description: Test-OU
 objectClass: dcObject
 objectClass: organization
 o: Example, Inc.
@@ -333,7 +360,7 @@ objectclass: organizationalunit
 
 dn: cn=user1,ou=Users,dc=test,dc=local
 objectclass: inetOrgPerson
-cn: User number one
+cn: User1
 sn: u1
 uid: user1
 userpassword: user1secret
@@ -343,7 +370,7 @@ ou: Users
 
 dn: cn=user2,ou=Users,dc=test,dc=local
 objectclass: inetOrgPerson
-cn: User number one
+cn: User2
 sn: u2
 uid: user2
 userpassword: user2secret
@@ -353,7 +380,7 @@ ou: Users
 
 dn: cn=user3,ou=Users,dc=test,dc=local
 objectclass: inetOrgPerson
-cn: User number one
+cn: User3
 sn: u3
 uid: user3
 userpassword: user3secret
@@ -378,13 +405,13 @@ objectclass: organizationalunit
 
 dn: ou=more,ou=Users,dc=test,dc=local
 dc: test
-description: BlaBlaBla
+description: Test-OU
 objectClass: dcObject
 objectClass: organizationalUnit
 
 dn: cn=user4, ou=more, ou=Users,dc=test,dc=local
 objectclass: inetOrgPerson
-cn: User number one
+cn: User4
 sn: u4
 uid: user4
 userpassword: user4secret
@@ -441,7 +468,7 @@ $t->run_daemon('/bin/sh', "$d/auth_daemon.sh");
 $t->waitforsocket('127.0.0.1:' . port(8888))
 	or die "Can't start auth daemon";
 
-$t->plan(21);
+$t->plan(22);
 
 $t->run();
 
@@ -500,8 +527,15 @@ like(http_get_auth('/ref1', 'user4', 'user4secret'), qr!LOGIN PAGE!,
 	'server2 user via referral on server1');
 
 # unknown user on referred server, result is empty dn
-like(http_get_auth('/ref1', 'userx', 'blah'), qr!LOGIN PAGE!,
+like(http_get_auth('/ref1', 'unknow_user', 'unknowpassword'), qr!LOGIN PAGE!,
 	'unknown user with referral on server1');
+
+
+# LDAP Query Injection result in 401
+like(http_get_auth('/query-injection', 'user1))(|(cn=user1', 'user1secret'), qr!LOGIN PAGE!,
+	'Injection Attempt in Username will be escaped and blocked.');
+
+
 
 
 ###############################################################################
