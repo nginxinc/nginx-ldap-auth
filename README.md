@@ -90,6 +90,9 @@ http {
 
       location = /auth-proxy {
          proxy_pass http://<strong>127.0.0.1</strong>:8888;
+         proxy_pass_request_body off;
+         proxy_pass_request_headers off;
+         proxy_set_header Content-Length "";
          proxy_cache <strong>auth_cache</strong>; # Must match the name in the proxy_cache_path directive above
          proxy_cache_valid 200 <strong>10m</strong>;
 
@@ -127,11 +130,12 @@ proxy_set_header X-Ldap-Template "(&(cn=%(username)s)(memberOf=cn=group1,cn=User
 
 The search filters can be combined from less complex filters using boolean operations and can be rather complex.
 
-The reference implementation uses cookie-based authentication. If you are using HTTP basic authentication instead, comment out the following directives as shown:
+The reference implementation uses cookie-based authentication. If you are using HTTP basic authentication instead, comment out the following directives, and enable the Authorization header as shown:
 
 <pre>
 <strong>#</strong>proxy_set_header X-CookieName "nginxauth";
 <strong>#</strong>proxy_set_header Cookie nginxauth=$cookie_nginxauth;
+<strong>proxy_set_header Authorization $http_authorization;</strong>
 </pre>
 
 ## Customization
