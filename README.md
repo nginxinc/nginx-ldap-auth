@@ -1,14 +1,16 @@
-# nginx-ldap-auth
+# PLEASE note that this project is *not designed or hardened* for production. It is intended as a model for such connector daemons
 
-Reference implementation of method for authenticating users on behalf of servers proxied by NGINX or NGINX Plus
+## The nginx-ldap-auth project
 
-## Description
+This project provides a reference model implementation  of a method for authenticating users on behalf of servers proxied by NGINX or NGINX Plus.
 
-**Note:** For ease of reading, this document refers to [NGINX Plus](http://www.nginx.com/products/), but it also applies to [open source NGINX](http://www.nginx.org/en). The prerequisite [ngx_http_auth_request_module](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html) module is included both in [NGINX Plus packages](http://cs.nginx.com/repo_setup) and [prebuilt open source NGINX binaries](http://nginx.org/en/linux_packages.html).
+### Note: ###
+For ease of reading, this document refers to NGINX Plus, but it also applies to open source NGINX. The prerequisite ngx_http_auth_request_module module is included both in NGINX Plus packages and prebuilt open source NGINX binaries. 
 
-The nginx-ldap-auth software is a reference implementation of a method for authenticating users who request protected resources from servers proxied by NGINX Plus. It includes a daemon (*ldap-auth*) that communicates with an authentication server, and a sample daemon that stands in for an actual back-end server during testing, by generating an authentication cookie based on the user’s credentials. The daemons are written in Python for use with a Lightweight Directory Access Protocol (LDAP) authentication server (OpenLDAP or Microsoft Windows Active Directory 2003 and 2012).
+### Description: ###
+The nginx-ldap-auth software is a reference model implementation of a method for authenticating users who request protected resources from servers proxied by NGINX Plus. It includes a daemon (ldap-auth) that communicates with an authentication server, and a sample daemon that stands in for an actual back-end server during testing, by generating an authentication cookie based on the user’s credentials. The daemons are written in Python for use with a Lightweight Directory Access Protocol (LDAP) authentication server (OpenLDAP or Microsoft Windows Active Directory 2003 and 2012).
 
-The ldap-auth daemon, which mediates between NGINX Plus and the LDAP server, is intended to serve as a model for "connector" daemons written in other languages, for different authentication systems, or both. [NGINX, Inc. Professional Services](http://nginx.com/services/) is available to assist with such adaptations.
+The ldap-auth daemon, which mediates between NGINX Plus and the LDAP server, is intended to serve as a model for "connector" daemons written in other languages, for different authentication systems, or both. NGINX, Inc. Professional Services is available to assist with such adaptations.
 
 ![NGINX LDAP Architecture](https://cdn-1.wp.nginx.com/wp-content/uploads/2016/02/ldap-auth-components.jpg)
 
