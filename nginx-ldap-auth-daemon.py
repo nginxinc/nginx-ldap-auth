@@ -1,6 +1,6 @@
 #!/bin/sh
 ''''[ -z $LOG ] && export LOG=/dev/stdout # '''
-''''which python  >/dev/null && exec python  -u "$0" "$@" >> $LOG 2>&1 # '''
+''''which python3  >/dev/null && exec python3  -u "$0" "$@" >> $LOG 2>&1 # '''
 
 # Copyright (C) 2014-2022 Nginx, Inc.
 

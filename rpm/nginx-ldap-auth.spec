@@ -12,8 +12,7 @@ Source0:	nginx-ldap-auth-release-%{version}.tar.gz
 
 BuildRequires:	systemd
 Requires:	systemd
-Requires:	python-ldap
-Requires:	python-argparse
+Requires:	python3-ldap
 Requires:	logrotate
 
 %description
