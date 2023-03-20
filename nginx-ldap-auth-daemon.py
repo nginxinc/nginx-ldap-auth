@@ -155,6 +155,7 @@ class AuthHandler(BaseHTTPRequestHandler):
 
         sys.stdout.write("%s - %s [%s] %s\n" % (addr, user,
                          self.log_date_time_string(), format % args))
+        sys.stdout.flush()
 
     def log_error(self, format, *args):
         self.log_message(format, *args)
