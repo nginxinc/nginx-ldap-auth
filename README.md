@@ -50,6 +50,10 @@ To install and configure the reference implementation, perform the following ste
       ```
       docker build -t nginx-ldap-auth-daemon --build-arg PYTHON_VERSION=3 .
       ```
+      If you want to use a CA certification file for validating the LDAP authentication server when using TLS, you can set the `LDAP_CA_CERT` environment variable in the environment running the authentication daemon. With the Docker container, you can do:
+      ```
+      docker run -e LDAP_CA_CERT='/path/to/cacert/file' nginx-ldap-auth-daemon
+      ```
 
     - **nginx-ldap-auth-daemon-ctl.sh** – Sample shell script for starting and stopping the daemon. Install on the same host as the ldap-auth daemon.
 
